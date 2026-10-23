@@ -3,9 +3,17 @@ export class RetroAudio {
   constructor() {
     this.context = null;
     this.enabled = false;
+    this.volume = 0.6;
+    this.master = null;
     this.zone = "village";
     this.step = 0;
     this.next = 0;
+  }
+  setVolume(value) {
+    if (!Number.isFinite(value)) return;
+    this.volume = Math.max(0, Math.min(1, value));
+    if (this.master)
+      this.master.gain.setValueAtTime(this.volume, this.context.currentTime);
   }
   async toggle() {
     if (this.enabled) {
@@ -21,7 +29,12 @@ export class RetroAudio {
     if (!Audio) return false;
     let timeout;
     try {
-      this.context ??= new Audio();
+      if (!this.context) {
+        this.context = new Audio();
+        this.master = this.context.createGain();
+        this.master.gain.setValueAtTime(this.volume, this.context.currentTime);
+        this.master.connect(this.context.destination);
+      }
       // Missing audio devices or browser policy can leave resume pending forever.
       const resumed = await Promise.race([
         this.context.resume().then(() => true),
@@ -57,7 +70,7 @@ export class RetroAudio {
     gain.gain.setValueAtTime(volume, now);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
     osc.connect(gain);
-    gain.connect(this.context.destination);
+    gain.connect(this.master);
     osc.start(now);
     osc.stop(now + duration);
   }
@@ -82,10 +95,13 @@ export class RetroAudio {
       ),
     );
   }
-  tick(zone, paused = false) {
+  tick(zone, paused = false, bossNearby = false) {
     if (!this.enabled || !this.context) return;
-    const track =
-      zone === "Öreg erdő" || zone === "Rejtett pince" ? "forest" : "village";
+    const track = bossNearby
+      ? "boss"
+      : zone === "Öreg erdő" || zone === "Rejtett pince"
+        ? "forest"
+        : "village";
     if (track !== this.zone) {
       this.zone = track;
       this.step = 0;
@@ -98,19 +114,35 @@ export class RetroAudio {
     }
     if (now < this.next) return;
     const melody =
-      track === "village"
+      track === "boss"
         ? [
-            392, 494, 587, 494, 440, 523, 659, 587, 494, 440, 392, 330, 349,
-            392, 440, 294,
+            147, 196, 233, 220, 147, 175, 220, 196, 165, 220, 262, 233, 175,
+            196, 220, 294,
           ]
-        : [
-            220, 262, 330, 294, 220, 247, 294, 262, 196, 247, 294, 262, 220,
-            196, 165, 196,
-          ];
-    this.tone(melody[this.step % 16], 0.28, "triangle", 0.045);
+        : track === "village"
+          ? [
+              392, 494, 587, 494, 440, 523, 659, 587, 494, 440, 392, 330, 349,
+              392, 440, 294,
+            ]
+          : [
+              220, 262, 330, 294, 220, 247, 294, 262, 196, 247, 294, 262, 220,
+              196, 165, 196,
+            ];
+    this.tone(
+      melody[this.step % 16],
+      track === "boss" ? 0.15 : 0.28,
+      track === "boss" ? "square" : "triangle",
+      track === "boss" ? 0.025 : 0.045,
+    );
     if (this.step % 4 === 0)
-      this.tone(track === "village" ? 130.81 : 110, 0.7, "triangle", 0.035);
+      this.tone(
+        track === "boss" ? 73.42 : track === "village" ? 130.81 : 110,
+        0.7,
+        "triangle",
+        0.035,
+      );
     this.step++;
-    this.next = now + (track === "village" ? 0.29 : 0.36);
+    this.next =
+      now + (track === "boss" ? 0.18 : track === "village" ? 0.29 : 0.36);
   }
 }

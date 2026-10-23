@@ -1,5 +1,5 @@
 // All world coordinates, encounters and rewards live here for easy expansion.
-export const WORLD = { width: 1920, height: 384 };
+export const WORLD = { width: 1920, height: 640 };
 export const LEVEL_XP = [0, 20, 55, 110, 190];
 export const WEAPONS = {
   iron: { name: "Vaskard", damage: 1 },
@@ -53,6 +53,13 @@ export const BUILDINGS = [
     roof: "#5e6356",
   },
 ];
+BUILDINGS.push(
+  { id: "shop", x: 317, y: 390, w: 80, h: 64, name: "Réka boltja" },
+  { id: "house3", x: 70, y: 390, w: 100, h: 64, name: "Fűszerész háza" },
+  { id: "house4", x: 415, y: 390, w: 100, h: 64, name: "Molnár háza" },
+  { id: "house5", x: 80, y: 512, w: 100, h: 64, name: "Kertész otthona" },
+  { id: "house6", x: 405, y: 512, w: 100, h: 64, name: "Favágók háza" },
+);
 export const NPCS = [
   { id: "smith", name: "Boros, a kovács", x: 161, y: 172, color: "#bd8164" },
   {
@@ -91,6 +98,22 @@ export const NPCS = [
     color: "#ba965e",
   },
 ];
+NPCS.push(
+  { ...NPCS.find((n) => n.id === "smith"), scene: "smithy", x: 263, y: 182 },
+  { ...NPCS.find((n) => n.id === "innkeeper"), scene: "inn", x: 373, y: 185 },
+  { ...NPCS.find((n) => n.id === "merchant"), scene: "shop", x: 320, y: 182 },
+);
+export const INTERIORS = {
+  smithy: "Boros kovácsműhelye",
+  inn: "Zöld Szarvas fogadó",
+  shop: "Réka kereskedése",
+  home1: "A fazekas otthona",
+  home2: "A takács otthona",
+  home3: "A fűszerész otthona",
+  home4: "A molnár otthona",
+  home5: "A kertész otthona",
+  home6: "A favágók otthona",
+};
 export const ENCOUNTERS = [
   {
     id: "slime1",
@@ -199,6 +222,66 @@ export const OBJECTS = {
     { id: "inscription", x: 136, y: 253, name: "Felirat" },
   ],
 };
+for (const [i, b] of BUILDINGS.filter((b) => b.id !== "cabin").entries()) {
+  const scene =
+    b.id === "smith"
+      ? "smithy"
+      : b.id === "inn"
+        ? "inn"
+        : b.id === "shop"
+          ? "shop"
+          : b.id === "house"
+            ? "home1"
+            : b.id.replace("house", "home");
+  OBJECTS.world.push({
+    id: "door-" + b.id,
+    name: b.name + " · bejárat",
+    x: b.x + b.w / 2,
+    y: b.y + b.h + 15,
+    scene,
+    building: b.id,
+  });
+  OBJECTS[scene] = [{ id: "interiorExit", name: "Kijárat", x: 320, y: 325 }];
+}
+export function interiorSolids(scene, flags = {}) {
+  const table = { x: 160, y: 141, w: 64, h: 27 },
+    bed = { x: 129, y: 235, w: 64, h: 33 };
+  if (scene === "cabin")
+    return [table, bed, { x: flags.cupboard ? 477 : 414, y: 75, w: 40, h: 61 }];
+  if (scene === "cellar")
+    return [
+      { x: 199, y: 150, w: 24, h: 22 },
+      { x: 308, y: 150, w: 24, h: 22 },
+      { x: 417, y: 150, w: 24, h: 22 },
+      { x: 304, y: 76, w: 32, h: 22 },
+      { x: 111, y: 227, w: 48, h: 28 },
+    ];
+  if (scene === "smithy")
+    return [
+      { x: 209, y: 143, w: 40, h: 23 },
+      { x: 370, y: 122, w: 64, h: 24 },
+      { x: 135, y: 105, w: 53, h: 26 },
+    ];
+  if (scene === "inn")
+    return [
+      { x: 130, y: 95, w: 64, h: 35 },
+      { x: 130, y: 146, w: 64, h: 35 },
+      { x: 380, y: 127, w: 64, h: 26 },
+      { x: 215, y: 227, w: 64, h: 26 },
+    ];
+  if (scene === "shop")
+    return [
+      { x: 288, y: 128, w: 64, h: 27 },
+      { x: 135, y: 92, w: 66, h: 32 },
+      { x: 445, y: 75, w: 60, h: 61 },
+    ];
+  return [
+    { x: 130, y: 100, w: 64, h: 35 },
+    { x: 343, y: 136, w: 64, h: 27 },
+    { x: 466, y: 75, w: 40, h: 61 },
+    { x: 139, y: 241, w: 24, h: 28 },
+  ];
+}
 export function zoneAt(x) {
   return x < 640
     ? "Smaragdvölgy falu"
@@ -208,13 +291,15 @@ export function zoneAt(x) {
 }
 export function initialState() {
   return {
-    version: 1,
+    version: 2,
+    returnSpot: null,
     scene: "world",
     player: { x: 264, y: 210, hp: 5, dx: 1, dy: 0 },
     level: 1,
     xp: 0,
     gold: 18,
     weapon: "iron",
+    armor: "linen",
     potions: 2,
     herbs: 0,
     flags: {
@@ -227,6 +312,7 @@ export function initialState() {
       cupboard: false,
       boss: false,
       amulet: false,
+      gateVisited: false,
     },
     runes: [false, false, false],
     collected: [],
@@ -241,8 +327,93 @@ export function initialState() {
 
 export const STREAM = { x: 960, w: 48, bridgeY: 192, bridgeH: 64 };
 export const DECOR = [
-  ...[[32,100],[32,156],[32,300],[605,104],[606,319],[693,65],[753,331],[970,67],[1105,333],[1217,73],[1298,99],[1313,333],[1513,64],[1566,335],[1634,77],[1692,320],[1858,86],[1863,292]].map(([x,y])=>({x,y,type:x>=1280?'pine':'oak',solid:false})),
-  ...[[728,470],[1160,468],[1240,520],[1505,469],[1580,499],[1812,453]].map(([x,y])=>({x,y,type:'rock',solid:true})),
-  ...[[605,480],[1300,478],[1380,555],[1690,553],[1864,518],[752,567],[898,445],[55,492]].map(([x,y])=>({x,y,type:'bush',solid:true})),
+  ...[
+    [1298, 420],
+    [1340, 436],
+    [1380, 440],
+    [1420, 410],
+    [1460, 440],
+    [1540, 450],
+    [1620, 415],
+    [1660, 440],
+    [1720, 460],
+    [1760, 410],
+    [1800, 450],
+    [1840, 410],
+    [1880, 430],
+    [1300, 560],
+    [1350, 580],
+    [1400, 550],
+    [1450, 590],
+    [1520, 565],
+    [1580, 600],
+    [1650, 570],
+    [1700, 590],
+    [1770, 560],
+    [1820, 590],
+    [1870, 560],
+    [1500, 90],
+    [1540, 80],
+    [1580, 100],
+    [1620, 64],
+    [1650, 110],
+    [1680, 80],
+    [1835, 120],
+    [1870, 150],
+  ].map(([x, y]) => ({
+    x,
+    y,
+    type: "pine",
+    solid: true,
+    w: 10,
+    h: 10,
+    offsetY: 0,
+  })),
+  { x: 1200, y: 486, type: "hill", solid: true, w: 56, h: 32, offsetY: -20 },
+  ...[
+    [32, 100],
+    [32, 156],
+    [32, 300],
+    [605, 104],
+    [606, 319],
+    [693, 65],
+    [753, 331],
+    [970, 67],
+    [1105, 333],
+    [1217, 73],
+    [1298, 99],
+    [1313, 333],
+    [1513, 64],
+    [1566, 335],
+    [1634, 77],
+    [1692, 320],
+    [1858, 86],
+    [1863, 292],
+  ].map(([x, y]) => ({
+    x,
+    y,
+    type: x >= 1280 ? "pine" : "oak",
+    solid: true,
+    w: 10,
+    h: 10,
+    offsetY: 0,
+  })),
+  ...[
+    [728, 470],
+    [1160, 468],
+    [1240, 520],
+    [1505, 469],
+    [1580, 499],
+    [1812, 453],
+  ].map(([x, y]) => ({ x, y, type: "rock", solid: true })),
+  ...[
+    [605, 480],
+    [1300, 478],
+    [1380, 555],
+    [1690, 553],
+    [1864, 518],
+    [752, 567],
+    [898, 445],
+    [55, 492],
+  ].map(([x, y]) => ({ x, y, type: "bush", solid: true })),
 ];
-export function sceneObjects(scene){return OBJECTS[scene]||[];}

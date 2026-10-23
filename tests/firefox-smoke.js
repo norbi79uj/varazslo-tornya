@@ -3,6 +3,7 @@
 import puppeteer from "puppeteer-core";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
+import { BUILDINGS, OBJECTS } from "../world.js";
 import { SAVE_KEY } from "../engine.js";
 await mkdir("test-results", { recursive: true });
 const browser = await puppeteer.launch({
@@ -325,10 +326,164 @@ try {
       });
     },
   );
+
+  await scenario(
+    "local PNG atlas and rendered pixel detail load without external assets",
+    async () => {
+      const result = await page.evaluate(async () => {
+        const r = await fetch("/assets/smaragd-atlas.png");
+        const { ATLAS } = await import("/assets/atlas.js");
+        const c = document.querySelector("#game"),
+          pixels = c.getContext("2d").getImageData(0, 0, 640, 384).data,
+          set = new Set();
+        for (let i = 0; i < pixels.length; i += 4)
+          set.add(`${pixels[i]},${pixels[i + 1]},${pixels[i + 2]}`);
+        return {
+          ok: r.ok,
+          type: r.headers.get("content-type"),
+          count: Object.keys(ATLAS).length,
+          colors: set.size,
+        };
+      });
+      assert.equal(result.ok, true);
+      assert.ok(result.type.includes("image/png"));
+      assert.equal(result.count, 74);
+      assert.ok(result.colors > 20);
+      await page.screenshot({
+        path: "test-results/snes-firefox-village.png",
+        fullPage: true,
+      });
+    },
+  );
+  await scenario(
+    "nine village doors, functional smith interior, interior save/reload and furniture collision",
+    async () => {
+      for (const b of BUILDINGS.filter((b) => b.id !== "cabin")) {
+        const door = OBJECTS.world.find((o) => o.id === "door-" + b.id);
+        await checkpoint({ player: { x: door.x, y: door.y + 8 } });
+        await key("e");
+        await page.waitForFunction(
+          () =>
+            document.querySelector("#location").textContent !==
+            "Smaragdvölgy falu",
+        );
+        if (b.id === "smith") {
+          await checkpoint({ gold: 50, player: { x: 263, y: 210 } });
+          await interact("Boros");
+          await choice("Edzett vaskard");
+          await close();
+          await interact("Boros");
+          await choice("Bélelt mellény");
+          await close();
+          assert.equal(await text("#gold"), "8");
+          assert.equal(
+            await page.$eval("#health", (e) => e.getAttribute("aria-label")),
+            "Életerő: 6/6",
+          );
+          await click("#save");
+          await page.reload();
+          await click("#load-start");
+          await has("#location", "Boros kovácsműhelye");
+        }
+        await checkpoint({ player: { x: 320, y: 301 } });
+        await key("e");
+        await has("#location", "Smaragdvölgy falu");
+      }
+      await checkpoint({ player: { x: 1420, y: 160 } });
+      await key("e");
+      await checkpoint({ player: { x: 433, y: 149 } });
+      await page.keyboard.down("w");
+      await new Promise((r) => setTimeout(r, 400));
+      await page.keyboard.up("w");
+      await click("#save");
+      assert.ok(
+        await page.evaluate(
+          (key) => JSON.parse(localStorage.getItem(key)).player.y >= 144,
+          SAVE_KEY,
+        ),
+      );
+      await key("e");
+      assert.equal((await page.$$("#dialog-choices button")).length, 0);
+      await has("#dialog-text", "írásai");
+    },
+  );
+  await scenario(
+    "water collision, real bridge movement, volume persistence, boss music and opened gate threshold",
+    async () => {
+      await checkpoint({ player: { x: 940, y: 300 } });
+      await page.keyboard.down("d");
+      await new Promise((r) => setTimeout(r, 400));
+      await page.keyboard.up("d");
+      await click("#save");
+      assert.ok(
+        await page.evaluate(
+          (key) => JSON.parse(localStorage.getItem(key)).player.x <= 952,
+          SAVE_KEY,
+        ),
+      );
+      await checkpoint({ player: { x: 940, y: 220 } });
+      await page.keyboard.down("d");
+      await new Promise((r) => setTimeout(r, 900));
+      await page.keyboard.up("d");
+      await click("#save");
+      assert.ok(
+        await page.evaluate(
+          (key) => JSON.parse(localStorage.getItem(key)).player.x > 1008,
+          SAVE_KEY,
+        ),
+      );
+      await page.$eval("#volume", (e) => {
+        e.value = "25";
+        e.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      await has("#volume-value", "25%");
+      await page.reload();
+      await click("#load-start");
+      assert.equal(await page.$eval("#volume", (e) => e.value), "25");
+      await checkpoint({
+        player: { x: 1700, y: 131, hp: 5 },
+        flags: { quest: true, rescued: true, returned: true },
+      });
+      await click("#sound");
+      await page.waitForFunction(() => window.__tones.includes(147));
+      await click("#sound");
+      await checkpoint({ player: { x: 1780, y: 64, hp: 5 } });
+      await page.keyboard.down("w");
+      await new Promise((r) => setTimeout(r, 400));
+      await page.keyboard.up("w");
+      await click("#save");
+      assert.ok(
+        await page.evaluate(
+          (key) => JSON.parse(localStorage.getItem(key)).player.y >= 54,
+          SAVE_KEY,
+        ),
+      );
+      await page.evaluate((key) => {
+        const s = JSON.parse(localStorage.getItem(key));
+        s.flags.boss = true;
+        s.enemies.find((e) => e.boss).hp = 0;
+        localStorage.setItem(key, JSON.stringify(s));
+      }, SAVE_KEY);
+      await click("#load");
+      await page.focus("#game");
+      await page.keyboard.down("w");
+      await has("#dialog-title", "Az északi út");
+      await page.keyboard.up("w");
+      await close();
+      await click("#save");
+      assert.equal(
+        await page.evaluate(
+          (key) => JSON.parse(localStorage.getItem(key)).flags.gateVisited,
+          SAVE_KEY,
+        ),
+        true,
+      );
+    },
+  );
   assert.deepEqual(errors, []);
   assert.deepEqual(external, []);
   console.log(
-    `${passed}/5 scenarios passed on ${await browser.version()}; no JavaScript errors or external asset requests.`,
+    `${passed}/8 scenarios passed on ${await browser.version()}; no JavaScript errors or external asset requests.`,
   );
 } finally {
   await browser.close();

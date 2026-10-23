@@ -6,6 +6,7 @@ const $ = (s) => document.querySelector(s),
   canvas = $("#game"),
   renderer = new Renderer(canvas),
   audio = new RetroAudio();
+let assetsReady = false;
 const game = new Game({
   message: (text) => {
     $("#status").textContent = text;
@@ -24,6 +25,7 @@ function setText(selector, value) {
   if (element.textContent !== text) element.textContent = text;
 }
 function storageAction(action) {
+  if (!assetsReady) return;
   try {
     game[action](window.localStorage);
   } catch {
@@ -85,6 +87,7 @@ function sync() {
   }
 }
 function requestRestart() {
+  if (!assetsReady) return;
   if (game.dead) {
     game.revive();
     sync();
@@ -121,6 +124,21 @@ $("#inventory").onclick = () => {
   sync();
 };
 $("#potion").onclick = () => game.potion();
+try {
+  const saved = localStorage.getItem("smaragd.audio-volume");
+  if (saved !== null && Number.isFinite(Number(saved)))
+    $("#volume").value = String(Math.max(0, Math.min(100, Number(saved))));
+} catch {}
+function volumeChanged() {
+  const value = Number($("#volume").value);
+  audio.setVolume(value / 100);
+  $("#volume-value").textContent = value + "%";
+  try {
+    localStorage.setItem("smaragd.audio-volume", String(value));
+  } catch {}
+}
+$("#volume").addEventListener("input", volumeChanged);
+volumeChanged();
 $("#sound").onclick = async () => {
   $("#sound").disabled = true;
   const enabled = await audio.toggle();
@@ -201,20 +219,23 @@ function frame(now) {
   if (!document.hidden) {
     game.update(dt);
     renderer.draw(game);
-    audio.tick(game.zone, !game.started || game.dead);
+    audio.tick(game.zone, !game.started || game.dead, game.bossNearby);
     sync();
   }
   requestAnimationFrame(frame);
 }
 $("#start").disabled = true;
 $("#load-start").disabled = true;
-renderer.ready.then(() => {
-  $("#start").disabled = false;
-  $("#load-start").disabled = false;
-  requestAnimationFrame(frame);
-}).catch(error => {
-  $("#overlay h2").textContent = "A grafika nem tölthető be";
-  $("#overlay p").textContent = "Indítsd a játékot helyi webszerverről, és ellenőrizd az assets mappát.";
-  $("#status").textContent = error.message;
-});
-
+renderer.ready
+  .then(() => {
+    assetsReady = true;
+    $("#start").disabled = false;
+    $("#load-start").disabled = false;
+    requestAnimationFrame(frame);
+  })
+  .catch((error) => {
+    $("#overlay h2").textContent = "A grafika nem tölthető be";
+    $("#overlay p").textContent =
+      "Indítsd a játékot helyi webszerverről, és ellenőrizd az assets mappát.";
+    $("#status").textContent = error.message;
+  });

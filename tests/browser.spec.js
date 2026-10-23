@@ -259,3 +259,227 @@ test("audio activation, corrupt saves, restart confirmation and mobile layout", 
   });
   expect(errors).toEqual([]);
 });
+
+test("local pixel atlas loads and missing graphics fail visibly instead of drawing placeholders", async ({
+  page,
+}) => {
+  const response = await page.request.get("/assets/smaragd-atlas.png");
+  expect(response.ok()).toBe(true);
+  expect(response.headers()["content-type"]).toContain("image/png");
+  for (const path of [
+    "/",
+    "/style.css",
+    "/game.js",
+    "/engine.js",
+    "/renderer.js",
+  ]) {
+    expect((await page.request.get(path)).ok()).toBe(true);
+  }
+  expect(
+    await page
+      .locator("#game")
+      .evaluate((c) => getComputedStyle(c).imageRendering),
+  ).toBe("pixelated");
+  const manifest = await page.evaluate(async () => {
+    const { ATLAS } = await import("/assets/atlas.js");
+    return {
+      count: Object.keys(ATLAS).length,
+      hero: ATLAS.hero1,
+      tree: ATLAS.oak,
+    };
+  });
+  expect(manifest.count).toBe(74);
+  expect(manifest.hero.w).toBe(24);
+  expect(manifest.tree.h).toBe(64);
+  const colors = await page.locator("#game").evaluate((c) => {
+    const p = c.getContext("2d").getImageData(0, 0, c.width, c.height).data;
+    const set = new Set();
+    for (let i = 0; i < p.length; i += 4)
+      set.add(`${p[i]},${p[i + 1]},${p[i + 2]}`);
+    return set.size;
+  });
+  expect(colors).toBeGreaterThan(20);
+  await page.route("**/assets/smaragd-atlas.png", (route) => route.abort());
+  await page.reload();
+  await expect(page.locator("#overlay h2")).toHaveText(
+    "A grafika nem tölthető be",
+  );
+  await expect(page.locator("#start")).toBeDisabled();
+  await page.keyboard.press("r");
+  await page.locator("#load").click();
+  await expect(page.locator("#overlay")).toBeVisible();
+  await expect(page.locator("#overlay h2")).toHaveText(
+    "A grafika nem tölthető be",
+  );
+});
+test("six homes, functional interiors, door returns, interior save and furniture collision", async ({
+  page,
+}) => {
+  const { BUILDINGS, OBJECTS } = await import("../world.js");
+  for (const b of BUILDINGS.filter((b) => b.id !== "cabin")) {
+    const door = OBJECTS.world.find((o) => o.id === "door-" + b.id);
+    await checkpoint(page, { player: { x: door.x, y: door.y + 8 } });
+    await page.keyboard.press("e");
+    await expect(page.locator("#location")).not.toHaveText("Smaragdvölgy falu");
+    if (b.id === "smith") {
+      await checkpoint(page, { gold: 30, player: { x: 263, y: 210 } });
+      await interact(page, "Boros");
+      await page.getByRole("button", { name: "Edzett vaskard" }).click();
+      await close(page);
+      await expect(page.locator("#weapon")).toHaveText("Edzett vaskard");
+      await page.locator("#save").click();
+      await page.reload();
+      await page.locator("#load-start").click();
+      await expect(page.locator("#location")).toHaveText("Boros kovácsműhelye");
+    }
+    await checkpoint(page, { player: { x: 320, y: 301 } });
+    await page.keyboard.press("e");
+    await expect(page.locator("#location")).toHaveText("Smaragdvölgy falu");
+  }
+  await checkpoint(page, { player: { x: 1420, y: 160 } });
+  await page.keyboard.press("e");
+  await checkpoint(page, { player: { x: 433, y: 149 } });
+  await page.keyboard.down("w");
+  await page.waitForTimeout(500);
+  await page.keyboard.up("w");
+  await page.locator("#save").click();
+  const pos = await page.evaluate(
+    (key) => JSON.parse(localStorage.getItem(key)).player,
+    SAVE_KEY,
+  );
+  expect(pos.y).toBeGreaterThanOrEqual(144);
+  // No journal: the hidden furniture remains ordinary, with no movement action.
+  await page.keyboard.press("e");
+  await expect(page.locator("#dialog-choices button")).toHaveCount(0);
+  await expect(page.locator("#dialog-text")).toContainText("írásai");
+});
+test("stream collision, bridge crossing, southern map, volume slider and actual open gate threshold", async ({
+  page,
+}) => {
+  await checkpoint(page, { player: { x: 940, y: 300 } });
+  await page.keyboard.down("d");
+  await page.waitForTimeout(500);
+  await page.keyboard.up("d");
+  await page.locator("#save").click();
+  const x = await page.evaluate(
+    (key) => JSON.parse(localStorage.getItem(key)).player.x,
+    SAVE_KEY,
+  );
+  expect(x).toBeLessThanOrEqual(952);
+  await checkpoint(page, { player: { x: 940, y: 220 } });
+  await page.keyboard.down("d");
+  await page.waitForTimeout(900);
+  await page.keyboard.up("d");
+  await page.locator("#save").click();
+  expect(
+    await page.evaluate(
+      (key) => JSON.parse(localStorage.getItem(key)).player.x,
+      SAVE_KEY,
+    ),
+  ).toBeGreaterThan(1008);
+  await checkpoint(page, { player: { x: 264, y: 550 } });
+  await page.screenshot({
+    path: "test-results/snes-southern-village.png",
+    fullPage: true,
+  });
+  await page.locator("#volume").fill("25");
+  await expect(page.locator("#volume-value")).toHaveText("25%");
+  await page.reload();
+  await page.locator("#load-start").click();
+  await expect(page.locator("#volume")).toHaveValue("25");
+  await checkpoint(page, { player: { x: 1780, y: 64 } });
+  await page.keyboard.down("w");
+  await page.waitForTimeout(500);
+  await page.keyboard.up("w");
+  await page.locator("#save").click();
+  expect(
+    await page.evaluate(
+      (key) => JSON.parse(localStorage.getItem(key)).player.y,
+      SAVE_KEY,
+    ),
+  ).toBeGreaterThanOrEqual(54);
+  const patch = await page.evaluate((key) => {
+    const s = JSON.parse(localStorage.getItem(key));
+    Object.assign(s.flags, {
+      quest: true,
+      rescued: true,
+      returned: true,
+      boss: true,
+    });
+    s.enemies.find((e) => e.boss).hp = 0;
+    return { flags: s.flags, enemies: s.enemies };
+  }, SAVE_KEY);
+  await checkpoint(page, { ...patch, player: { x: 1780, y: 64 } });
+  await page.keyboard.down("w");
+  await expect(page.locator("#dialog-title")).toHaveText("Az északi út");
+  await page.keyboard.up("w");
+  await close(page);
+  await page.locator("#save").click();
+  expect(
+    await page.evaluate(
+      (key) => JSON.parse(localStorage.getItem(key)).flags.gateVisited,
+      SAVE_KEY,
+    ),
+  ).toBe(true);
+});
+
+test("touch controls move and interact; maximum-level HUD fits a narrow screen", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    hasTouch: true,
+    isMobile: true,
+  });
+  try {
+    const page = await context.newPage();
+    await page.goto("http://127.0.0.1:8000");
+    await page.locator("#start").tap();
+    const right = page.locator('[data-key="ArrowRight"]');
+    await right.scrollIntoViewIfNeeded();
+    const b = await right.boundingBox();
+    const session = await context.newCDPSession(page);
+    await session.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [{ x: b.x + b.width / 2, y: b.y + b.height / 2 }],
+    });
+    await page.waitForTimeout(400);
+    await session.send("Input.dispatchTouchEvent", {
+      type: "touchEnd",
+      touchPoints: [],
+    });
+    await page.locator("#save").tap();
+    expect(
+      await page.evaluate(
+        (key) => JSON.parse(localStorage.getItem(key)).player.x,
+        SAVE_KEY,
+      ),
+    ).toBeGreaterThan(285);
+    await checkpoint(page, { player: { x: 338, y: 251 } });
+    await page.locator('[data-key="e"]').tap();
+    await expect(page.locator("#dialog-title")).toContainText("Réka");
+    await close(page);
+    await checkpoint(page, {
+      level: 5,
+      xp: 190,
+      armor: "padded",
+      flags: { journal: true, examined: true, cupboard: true, amulet: true },
+      player: { x: 264, y: 210, hp: 11 },
+    });
+    await expect(page.locator("#health")).toHaveAttribute(
+      "aria-label",
+      "Életerő: 11/11",
+    );
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: "test-results/snes-touch-max-hp.png",
+      fullPage: true,
+    });
+  } finally {
+    await context.close();
+  }
+});

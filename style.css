@@ -519,3 +519,52 @@ button:focus-visible {
     line-height: 1.7;
   }
 }
+.volume-control {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  color: #a7b99b;
+  font-size: 10px;
+  margin-left: 6px;
+}
+.volume-control input {
+  width: 80px;
+  accent-color: #c3e989;
+  cursor: pointer;
+}
+.volume-control output {
+  min-width: 30px;
+}
+.toolbar {
+  flex-wrap: wrap;
+}
+button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+@media (max-width: 650px) {
+  .volume-control {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+  .volume-control input {
+    flex: 1;
+    max-width: 150px;
+  }
+  .location {
+    display: none !important;
+  }
+  .quest {
+    max-width: 66%;
+  }
+}
+@media (max-width: 650px) {
+  .hud .quest {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
+  .hud > div:first-child {
+    flex-shrink: 0;
+  }
+}

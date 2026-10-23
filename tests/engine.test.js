@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { Game, SAVE_KEY, validateSave } from "../engine.js";
-import { initialState, NPCS } from "../world.js";
+import { initialState, NPCS, OBJECTS } from "../world.js";
 const make = () => {
   const g = new Game();
   g.start();
@@ -111,6 +111,14 @@ test("smith rejects insufficient gold and charges once for modest upgraded sword
   assert.equal(g.state.weapon, "tempered");
   g.close();
   interact(g, "smith");
+  assert.equal(g.dialog.choices.length, 1);
+  g.state.gold = 20;
+  choose(g, "Bélelt");
+  assert.equal(g.state.gold, 2);
+  assert.equal(g.maxHp, 6);
+  assert.equal(g.state.armor, "padded");
+  g.close();
+  interact(g, "smith");
   assert.equal(g.dialog.choices.length, 0);
 });
 test("merchant purchase, inn heal and potions never waste full-health resources", () => {
@@ -202,6 +210,14 @@ test("boss cannot be damaged before helping villagers; defeat opens the northern
 test("cabinet has no proximity prompt; inspecting and moving are distinct manual actions", () => {
   const g = make();
   g.changeScene("cabin", 433, 148);
+  g.interact();
+  assert.equal(g.state.flags.examined, false);
+  assert.equal(g.state.flags.cupboard, false);
+  g.close();
+  Object.assign(g.state.player, { x: 211, y: 195 });
+  g.interact();
+  g.close();
+  Object.assign(g.state.player, { x: 433, y: 148 });
   assert.equal(g.nearby(), undefined);
   g.interact();
   assert.equal(g.state.flags.examined, true);
@@ -319,4 +335,90 @@ test("malformed player coordinates, enemy stats and incomplete saves are rejecte
     mutate(state);
     assert.throws(() => validateSave(state));
   }
+});
+
+test("stream blocks water outside the wooden bridge and rocks block movement", () => {
+  const g = make(),
+    p = g.state.player;
+  Object.assign(p, { x: 940, y: 300 });
+  g.move(p, 20, 0);
+  assert.equal(p.x, 940);
+  Object.assign(p, { x: 940, y: 220 });
+  for (let i = 0; i < 20; i++) g.move(p, 5, 0);
+  assert.equal(p.x, 1040);
+  Object.assign(p, { x: 1480, y: 480 });
+  g.move(p, 10, 0);
+  assert.equal(p.x, 1480);
+});
+test("six homes and functional smith/inn/shop interiors have exits and save correctly", () => {
+  const g = make(),
+    store = memory();
+  for (const b of [
+    "smith",
+    "inn",
+    "shop",
+    "house",
+    "house2",
+    "house3",
+    "house4",
+    "house5",
+    "house6",
+  ]) {
+    const door = OBJECTS.world.find((o) => o.id === "door-" + b);
+    Object.assign(g.state.player, { x: door.x, y: door.y + 8 });
+    g.interact();
+    assert.equal(g.state.scene, door.scene);
+    assert.ok(g.state.returnSpot);
+    assert.equal(g.save(store), true);
+    assert.equal(g.load(store), true);
+    Object.assign(g.state.player, { x: 320, y: 301 });
+    g.interact();
+    assert.equal(g.state.scene, "world");
+    assert.equal(g.state.returnSpot, null);
+    assert.equal(g.state.player.x, door.x);
+  }
+});
+test("v1 saves migrate without losing inventory, quests or progress; old blocked coordinates relocate safely", () => {
+  const old = initialState();
+  old.version = 1;
+  delete old.armor;
+  delete old.returnSpot;
+  delete old.flags.gateVisited;
+  old.gold = 77;
+  old.xp = 20;
+  old.level = 2;
+  old.player.hp = 6;
+  old.player.x = 970;
+  old.player.y = 300;
+  const loaded = validateSave(old);
+  assert.equal(loaded.version, 2);
+  assert.equal(loaded.gold, 77);
+  assert.equal(loaded.level, 2);
+  assert.deepEqual([loaded.player.x, loaded.player.y], [264, 210]);
+  assert.equal(loaded.flags.gateVisited, false);
+});
+test("closed gate is solid, defeated boss opens a real threshold and persists completion", () => {
+  const g = make(),
+    p = g.state.player;
+  Object.assign(p, { x: 1780, y: 60 });
+  g.move(p, 0, -20);
+  assert.equal(p.y, 60);
+  Object.assign(g.state.flags, {
+    quest: true,
+    rescued: true,
+    returned: true,
+    boss: true,
+  });
+  g.state.enemies.find((e) => e.boss).hp = 0;
+  g.move(p, 0, -30);
+  assert.equal(p.y, 30);
+  g.update(0.01);
+  assert.equal(g.state.flags.gateVisited, true);
+  assert.equal(g.dialog.title, "Az északi út");
+  g.close();
+  const save = memory();
+  assert.equal(g.save(save), true);
+  assert.equal(g.load(save), true);
+  assert.equal(g.state.flags.gateVisited, true);
+  assert.equal(g.blocked(p.x, 0), true);
 });

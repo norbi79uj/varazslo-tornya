@@ -9,6 +9,10 @@ import {
   WEAPONS,
   initialState,
   zoneAt,
+  INTERIORS,
+  STREAM,
+  DECOR,
+  interiorSolids,
 } from "./world.js";
 export const SAVE_KEY = "varazslo-tornya.smaragdvolgy.v1";
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -27,14 +31,30 @@ export class Game {
     this.invincible = 0;
   }
   get maxHp() {
-    return 4 + this.state.level + Number(this.state.flags.amulet);
+    return (
+      4 +
+      this.state.level +
+      Number(this.state.flags.amulet) +
+      Number(this.state.armor === "padded")
+    );
   }
   get zone() {
     return this.state.scene === "world"
       ? zoneAt(this.state.player.x)
       : this.state.scene === "cabin"
         ? "Elhagyott kunyhó"
-        : "Rejtett pince";
+        : this.state.scene === "cellar"
+          ? "Rejtett pince"
+          : INTERIORS[this.state.scene];
+  }
+  get bossNearby() {
+    const e = this.state.enemies.find((e) => e.boss);
+    return (
+      this.state.scene === "world" &&
+      !this.state.flags.boss &&
+      this.state.flags.returned &&
+      distance(this.state.player, e) < 165
+    );
   }
   get objective() {
     const f = this.state.flags;
@@ -73,13 +93,7 @@ export class Game {
     return { label, action };
   }
   blocked(x, y) {
-    const s = this.state;
-    if (s.scene !== "world") return x < 113 || x > 527 || y < 73 || y > 327;
-    if (x < 28 || x > WORLD.width - 28 || y < 54 || y > 347) return true;
-    return BUILDINGS.some(
-      (o) =>
-        x + 10 > o.x && x - 10 < o.x + o.w && y + 9 > o.y && y - 8 < o.y + o.h,
-    );
+    return isBlocked(this.state, x, y);
   }
   move(actor, dx, dy) {
     if (!this.blocked(actor.x + dx, actor.y)) actor.x += dx;
@@ -171,6 +185,20 @@ export class Game {
     }
     if (this.keys.has(" ")) this.attack();
     if (s.scene !== "world") return;
+    if (
+      s.flags.boss &&
+      !s.flags.gateVisited &&
+      p.x > 1758 &&
+      p.x < 1800 &&
+      p.y < 32
+    ) {
+      s.flags.gateVisited = true;
+      this.open(
+        "Az északi út",
+        "Átléptél a felszabadított kapun. Smaragdvölgy biztonságban van. A következő vidék még nem része ennek a fejezetnek; itt most visszafordulhatsz.",
+      );
+      return;
+    }
     for (const e of s.enemies) {
       e.flash = Math.max(0, e.flash - dt);
       if (e.hp <= 0) {
@@ -218,6 +246,7 @@ export class Game {
   revive() {
     this.state.gold = Math.max(0, this.state.gold - 5);
     this.state.scene = "world";
+    this.state.returnSpot = null;
     Object.assign(this.state.player, { x: 415, y: 211, hp: this.maxHp });
     this.clearTransient();
     this.message("Ilona ápolásának hála újra útra kelhetsz.");
@@ -225,11 +254,15 @@ export class Game {
   nearby(includeHidden = false) {
     const s = this.state,
       p = s.player;
-    const objects = [...OBJECTS[s.scene]];
+    const objects = [...(OBJECTS[s.scene] || [])];
+    objects.push(
+      ...NPCS.filter(
+        (n) =>
+          (n.scene || "world") === s.scene &&
+          (n.id !== "missing" || !s.flags.rescued),
+      ),
+    );
     if (s.scene === "world") {
-      objects.push(
-        ...NPCS.filter((n) => n.id !== "missing" || !s.flags.rescued),
-      );
       objects.push(
         ...HERBS.filter((h) => !s.collected.includes(h.id)).map((h) => ({
           ...h,
@@ -257,6 +290,16 @@ export class Game {
       return this.message(
         "Nincs itt semmi elérhető. Menj közelebb, majd nyomj E-t.",
       );
+    if (o.id.startsWith("door-")) {
+      const b = BUILDINGS.find((b) => b.id === o.building);
+      s.returnSpot = { x: b.x + b.w / 2, y: b.y + b.h + 18 };
+      return this.changeScene(o.scene, 320, 300);
+    }
+    if (o.id === "interiorExit") {
+      const point = s.returnSpot || { x: 264, y: 210 };
+      s.returnSpot = null;
+      return this.changeScene("world", point.x, point.y);
+    }
     if (o.id.startsWith("herb")) {
       s.collected.push(o.id);
       s.herbs++;
@@ -277,24 +320,39 @@ export class Game {
       this.open("Köszönöm!", success);
     };
     switch (o.id) {
-      case "smith":
+      case "smith": {
+        const choices = [];
+        if (s.weapon === "iron")
+          choices.push(
+            this.choice("Edzett vaskard · 24 arany", () =>
+              buy(
+                24,
+                () => {
+                  s.weapon = "tempered";
+                },
+                "Edzett vaskard felszerelve. Sebzés: 2.",
+              ),
+            ),
+          );
+        if (s.armor === "linen")
+          choices.push(
+            this.choice("Bélelt mellény · 18 arany", () =>
+              buy(
+                18,
+                () => {
+                  s.armor = "padded";
+                  s.player.hp++;
+                },
+                "Bélelt mellény felszerelve. +1 maximális életerő. Egyszerű falusi védelem.",
+              ),
+            ),
+          );
         return this.open(
           o.name,
-          "Az egyszerű vaskardod jó kezdet. Edzett pengém kétszer olyan erős, de továbbra is közönséges fegyver.",
-          s.weapon === "iron"
-            ? [
-                this.choice("Edzett vaskard · 24 arany", () =>
-                  buy(
-                    24,
-                    () => {
-                      s.weapon = "tempered";
-                    },
-                    "Edzett vaskard felszerelve. Sebzés: 2.",
-                  ),
-                ),
-              ]
-            : [],
+          "Az egyszerű vaskardod jó kezdet. Edzett pengém kétszer olyan erős. Bélelt mellényem egy életerővel növeli a védelmed. Mindkettő közönséges, falusi felszerelés.",
+          choices,
         );
+      }
       case "innkeeper": {
         const choices = [
           this.choice("Pihenés · 5 arany", () => {
@@ -430,6 +488,11 @@ export class Game {
           "„A pince lejáratát a magas szekrény mögé rejtettem. Előbb vizsgáld meg, aztán told félre. Odalent a felirat vezet: a nap útját kövesd, hajnaltól alkonyatig.”",
         );
       case "cupboard":
+        if (!f.journal)
+          return this.open(
+            "Poros szekrény",
+            "Régi, súlyos bútordarab. A kunyhó egykori lakójának írásai talán többet elárulnak róla.",
+          );
         if (f.cupboard)
           return this.open(
             "Elmozdított szekrény",
@@ -444,14 +507,14 @@ export class Game {
           f.examined = true;
           return this.open(
             "Poros szekrény",
-            "A padlón karcolásokat látsz, a szekrény alatt hideg levegő szivárog. Súlyos, de talán elmozdítható. Vizsgáld meg újra, ha készen állsz.",
+            "A padlón karcolásokat látsz, a szekrény alatt hideg levegő szivárog. Az alsó polc mögött egy rézreteszt tapintasz ki: ezt kioldva a bútor félretolható. Vizsgáld meg újra a reteszt.",
           );
         }
         return this.open(
           "Poros szekrény",
           "Megragadod a szekrény oldalát. Félretolod?",
           [
-            this.choice("Félretolom a szekrényt", () => {
+            this.choice("Félretolom a szekrényt (retesz kioldása)", () => {
               f.cupboard = true;
               this.sound("secret");
               this.open(
@@ -529,7 +592,7 @@ export class Game {
     if (!this.started || this.dead || this.dialog) return;
     this.open(
       "Tarisznya és küldetések",
-      `${WEAPONS[s.weapon].name} (sebzés: ${WEAPONS[s.weapon].damage}) · Vaspajzs · Vászonvért\nGyógyital: ${s.potions} · Gyógyfű: ${s.herbs}${s.flags.amulet ? " · Rézmedál (+1 életerő)" : ""}\n${this.objective}\nIlona gyógyfüvei: ${s.flags.herbsDone ? "teljesítve" : `${s.herbs}/3`}`,
+      `${WEAPONS[s.weapon].name} (sebzés: ${WEAPONS[s.weapon].damage}) · Vaspajzs · ${s.armor === "padded" ? "Bélelt mellény (+1 életerő)" : "Vászonvért"}\nGyógyital: ${s.potions} · Gyógyfű: ${s.herbs}${s.flags.amulet ? " · Rézmedál (+1 életerő)" : ""}\n${this.objective}\nIlona gyógyfüvei: ${s.flags.herbsDone ? "teljesítve" : `${s.herbs}/3`}`,
     );
   }
   save(storage) {
@@ -578,8 +641,10 @@ export function validateSave(s) {
   const finite = (n, min, max) => Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    s.version !== 1 ||
-    !["world", "cabin", "cellar"].includes(s.scene) ||
+    ![1, 2].includes(s.version) ||
+    !["world", "cabin", "cellar", ...Object.keys(INTERIORS)].includes(
+      s.scene,
+    ) ||
     !s.player ||
     !s.flags
   )
@@ -590,27 +655,52 @@ export function validateSave(s) {
     !integer(s.gold, 0, 1000000) ||
     !integer(s.potions, 0, 100000) ||
     !integer(s.herbs, 0, 4) ||
-    !Object.hasOwn(WEAPONS, s.weapon)
+    !Object.hasOwn(WEAPONS, s.weapon) ||
+    (!(s.version === 1 && s.armor === undefined) &&
+      !["linen", "padded"].includes(s.armor))
   )
     fail();
   const expected = 1 + LEVEL_XP.slice(1).filter((x) => s.xp >= x).length;
   if (expected !== s.level) fail();
+  if (s.version === 1) {
+    s = structuredClone(s);
+    s.version = 2;
+    s.returnSpot = null;
+    s.flags.gateVisited = false;
+    s.armor = "linen";
+    if (s.flags.examined || s.flags.cupboard) s.flags.journal = true;
+    if (isBlocked(s, s.player.x, s.player.y)) {
+      Object.assign(
+        s.player,
+        s.scene === "world" ? { x: 264, y: 210 } : { x: 320, y: 300 },
+      );
+    }
+  }
   const base = initialState();
   for (const flag of Object.keys(base.flags))
     if (typeof s.flags[flag] !== "boolean") fail();
   if (
     (s.flags.returned && !s.flags.rescued) ||
     (s.flags.boss && !s.flags.returned) ||
-    (s.flags.cupboard && !s.flags.examined) ||
-    (s.flags.amulet && !s.flags.cupboard)
+    (s.flags.cupboard && (!s.flags.examined || !s.flags.journal)) ||
+    (s.flags.amulet && !s.flags.cupboard) ||
+    (s.flags.gateVisited && !s.flags.boss)
   )
     fail();
   if (
     !finite(s.player.x, 28, s.scene === "world" ? 1892 : 527) ||
-    !finite(s.player.y, 54, 347) ||
+    !finite(
+      s.player.y,
+      s.scene === "world" ? 20 : 73,
+      s.scene === "world" ? WORLD.height - 28 : 327,
+    ) ||
     !finite(s.player.dx, -1, 1) ||
     !finite(s.player.dy, -1, 1) ||
-    !integer(s.player.hp, 1, 4 + s.level + Number(s.flags.amulet))
+    !integer(
+      s.player.hp,
+      1,
+      4 + s.level + Number(s.flags.amulet) + Number(s.armor === "padded"),
+    )
   )
     fail();
   if (
@@ -619,17 +709,18 @@ export function validateSave(s) {
     (s.scene === "cellar" && !s.flags.cupboard)
   )
     fail();
-  if (
-    s.scene === "world" &&
-    BUILDINGS.some(
-      (o) =>
-        s.player.x + 10 > o.x &&
-        s.player.x - 10 < o.x + o.w &&
-        s.player.y + 9 > o.y &&
-        s.player.y - 8 < o.y + o.h,
+  if (isBlocked(s, s.player.x, s.player.y)) fail();
+  if (s.returnSpot !== null) {
+    if (
+      !s.returnSpot ||
+      !Object.hasOwn(INTERIORS, s.scene) ||
+      !finite(s.returnSpot.x, 28, 1892) ||
+      !finite(s.returnSpot.y, 54, WORLD.height - 28) ||
+      isBlocked({ ...s, scene: "world" }, s.returnSpot.x, s.returnSpot.y)
     )
-  )
-    fail();
+      fail();
+    base.returnSpot = { x: s.returnSpot.x, y: s.returnSpot.y };
+  } else if (Object.hasOwn(INTERIORS, s.scene)) fail();
   if (
     !Array.isArray(s.runes) ||
     s.runes.length !== 3 ||
@@ -649,7 +740,15 @@ export function validateSave(s) {
     dx: s.player.dx,
     dy: s.player.dy,
   };
-  for (const key of ["level", "xp", "gold", "weapon", "potions", "herbs"])
+  for (const key of [
+    "level",
+    "xp",
+    "gold",
+    "weapon",
+    "armor",
+    "potions",
+    "herbs",
+  ])
     base[key] = s[key];
   base.flags = Object.fromEntries(
     Object.keys(base.flags).map((k) => [k, s.flags[k]]),
@@ -663,7 +762,7 @@ export function validateSave(s) {
       v.id !== e.id ||
       !integer(v.hp, 0, e.hp) ||
       !finite(v.x, 28, 1892) ||
-      !finite(v.y, 54, 347) ||
+      !finite(v.y, 54, WORLD.height - 28) ||
       !finite(v.respawn, 0, 35)
     )
       fail();
@@ -679,4 +778,40 @@ export function validateSave(s) {
   });
   if (base.flags.boss !== (base.enemies.find((e) => e.boss).hp === 0)) fail();
   return base;
+}
+
+export function isBlocked(s, x, y) {
+  const overlap = (o) =>
+    x + 9 > o.x && x - 9 < o.x + o.w && y + 8 > o.y && y - 8 < o.y + o.h;
+  if (s.scene !== "world")
+    return (
+      x < 113 ||
+      x > 527 ||
+      y < 73 ||
+      y > 327 ||
+      interiorSolids(s.scene, s.flags).some(overlap)
+    );
+  const gate = s.flags.boss && x > 1758 && x < 1800;
+  if (
+    x < 28 ||
+    x > WORLD.width - 28 ||
+    y < (gate ? 20 : 54) ||
+    y > WORLD.height - 28
+  )
+    return true;
+  if (BUILDINGS.some(overlap)) return true;
+  if (
+    x + 8 > STREAM.x &&
+    x - 8 < STREAM.x + STREAM.w &&
+    (y - 8 < STREAM.bridgeY + 8 || y + 8 > STREAM.bridgeY + STREAM.bridgeH - 8)
+  )
+    return true;
+  return DECOR.filter((d) => d.solid).some((d) =>
+    overlap({
+      x: d.x - (d.w || 28) / 2,
+      y: d.y + (d.offsetY ?? -2),
+      w: d.w || 28,
+      h: d.h || 12,
+    }),
+  );
 }

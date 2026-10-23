@@ -14,6 +14,9 @@ test("missing or rejected Web Audio remains muted without breaking the game", as
   const audio = new RetroAudio();
   assert.equal(await audio.toggle(), false);
   window.AudioContext = class {
+    createGain() {
+      return { gain: { setValueAtTime() {} }, connect() {} };
+    }
     resume() {
       return Promise.reject(Error("Audio unavailable"));
     }
@@ -31,6 +34,9 @@ test("a suspended audio backend times out instead of locking the sound button", 
     t,
     class {
       state = "suspended";
+      createGain() {
+        return { gain: { setValueAtTime() {} }, connect() {} };
+      }
       resume() {
         return new Promise(() => {});
       }
@@ -83,6 +89,12 @@ test("village and forest schedule distinct melodies and effects, and muting susp
   assert.deepEqual(frequencies.splice(0), [392, 130.81]);
   audio.tick("Öreg erdő");
   assert.deepEqual(frequencies.splice(0), [220, 110]);
+  audio.tick("Öreg erdő", false, true);
+  assert.deepEqual(frequencies.splice(0), [147, 73.42]);
+  audio.setVolume(0.25);
+  assert.equal(audio.volume, 0.25);
+  audio.setVolume(99);
+  assert.equal(audio.volume, 1);
   audio.effect("buy");
   assert.deepEqual(frequencies.splice(0), [523, 659, 784]);
   audio.effect("attack");
