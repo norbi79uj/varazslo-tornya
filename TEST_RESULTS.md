@@ -1,3 +1,33 @@
+# Smaragdvölgy – vizuális javító kör
+
+**Ág:** `fix/smaragdvolgy-visual-alignment`. **Kiindulás:** `feat/smaragdvolgy-village-detail`, `3cd5010`. **Dátum:** 2026. október 23.
+
+| Ellenőrzés                                         | Aktuális eredmény                                                                                 |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `npm test`                                         | **37/37 sikeres**, 0 kihagyott                                                                    |
+| Chromium, teljes böngészős sorozat                 | **13/13 sikeres**, 0 kihagyott                                                                    |
+| Firefox ESR, teljes böngészős sorozat              | **11/11 sikeres**, 0 kihagyott                                                                    |
+| Főtér, piac, házak, ülő öreg, kovács, favágó       | **6–6 célzott kép** mindkét böngészőben, elkészítve és megtekintve                                |
+| Szokásos helyszínképek                             | 10 új kép; a piac, falu, házak, fogadó, híd, erdő, szikla, kunyhó, pince, kovácsműhely áttekintve |
+| Játékmeneti forrásfájlok összevetése `3cd5010`-zel | Hét érintetlen forrásfájl, minden PNG és licenc bájtazonos                                        |
+| JavaScript-szintaxis, `git diff --check`           | Sikeres                                                                                           |
+
+A három új Node-teszt a közös rácsot és talppontokat, a házsorok közötti vizuális távolságot, illetve a sprite téglalapja helyett talppontból számított rendezést ellenőrzi. A teljes korábbi 34 ellenőrzés is megmaradt.
+
+Az új, mindkét böngészőben futó Canvas-próba tényleges rajzhívásokból méri a lovag, Réka és Boros talppontját; az elvárt talp a logikai Y + 8, a közös 2 pixeles rácson. Ellenőrzi a kamera igazítását, több mint kétszáz terep-/díszlet-rajzhívás helyét, a 80 pixeles házmagasságot és a natív 640 pixeles asztali Canvas-szélességet. A feliratpróba Réka közelében pontosan egy nevet talál, a főtér távolabbi pontján egyet sem; a pálya alsó szélén a felirat felül jelenik meg, a lovag takarása nélkül. A valódi pult → lovag és Réka → pult sorrend próbája továbbra is sikeres.
+
+A teljes Firefox-futásban **0 alkalmazásból érkező JavaScript-hiba és 0 külső erőforráskérés** volt. A korábbi mozgás-, harc-, NPC-, kereskedési, gyógyítási, küldetés-, Tövisúr-, ajtó-, híd-, mentés- és pinceforgatókönyvek is sikeresek. A játékmeneti tesztekhez nem kellett új elvárt játékállapotot megadni.
+
+Érintetlen fájlok: `engine.js`, `world.js`, `game.js`, `village-life.js`, `village-layout.js`, `audio.js`, `assets/kenney/characters/profiles.js`. A kirajzolási igazítások nem változtatják meg a logikai NPC-pozíciókat, hitboxokat vagy mentéseket. Minden PNG és licenc az előző commit változatlan fájlja.
+
+Vizuális bizonyítékok: `artifacts/alignment-review/{chromium,firefox}-{centre,market,houses,elder-seated,smith,lumberjack}.png`; a padhoz érkező, majd leülő Áront külön, öt másodperc várakozás után rögzítettük. Az összehasonlításhoz megőrzött korábbi képek helye: `artifacts/visual-before/`. Ezek fejlesztői kimenetek, nem kerülnek Gitbe. A konkrét hibajegyzék: [VISUAL_FIXES.md](VISUAL_FIXES.md).
+
+A tesztgép és a korlátok változatlanok: headless Chromium és valódi Firefox ESR helyi HTTP-szerverrel; fizikai telefonos és hangszórós próba nem történt. A GitHub Pages beállításait ez a kör sem módosítja. Az alábbi előző jelentés a tesztkörnyezetet és a megőrzött regresszió részleteit rögzíti.
+
+---
+
+## Megőrzött előző fejlesztési mérföldkő
+
 # Smaragdvölgy – részletes falu: tényleges ellenőrzések
 
 **Dátum:** 2026. október 23. **Ág:** `feat/smaragdvolgy-village-detail`. Kiindulás: a sikeresen tesztelt és feltöltött `feat/kenney-graphics`, `ce6e837`. Első működő fejlesztési mérföldkő: `5132526`.

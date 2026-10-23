@@ -568,3 +568,8 @@ button:disabled {
     flex-shrink: 0;
   }
 }
+/* A 640px canvas stays at its native pixel scale on desktop. */
+.game-frame {
+  max-width: 642px;
+  margin-inline: auto;
+}

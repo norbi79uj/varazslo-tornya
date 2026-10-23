@@ -147,6 +147,10 @@ A környezet 16 pixeles forrásai egységes 2× egész pixeles nagyítást kapna
 
 A három rokon Kenney-csomag palettájához illeszkedő saját kiegészítő palettát használunk. Az erdei talajon enyhe sötétzöld árnyékolás különíti el az erdőt a réttől; a csempék és szereplők egységes pixelméretűek. A víz két csempéje és a statikus szereplők láb-/testeltolásai adnak animációt. A feliratok, életerőcsíkok és kardív saját Canvas-rajzok, nem átvett képek.
 
+## A vizuális javító kör képkivágásai
+
+A `fix/smaragdvolgy-visual-alignment` ág nem módosítja a képfájlokat vagy licenceket. A tetők az eredeti saját tetőelemek 0–15. és 24–31. forrássorát használják, változatlan 2× pixelmérettel, így a tető 48 világpixel magas. A homlokzati ablak a saját `dormer` `(3,7,10,9)` régiója; a kisebb cégtábla a megfelelő eredeti tábla `(5,6,18,12)` régiója. A piaci tető felső húsz sora és az oszloprészek külön rajzolódnak, nyújtás nélkül. A `marketCounter` középső üvegét nem rajzoljuk ki, hogy az NPC arca szabad maradjon. A sziklás kiemelkedés a változatlan Kenney `rock` elem két összefüggő példányát használja. A megmaradt teljes definíciójegyzék néhány, most nem rajzolt elemet is tartalmaz.
+
 ## Megőrzött régi források, hang
 
 Az előző saját atlasz (`assets/smaragd-atlas.png`, `assets/atlas.js`, `tools/build-assets.mjs`) a korábbi változat reprodukálhatóságához maradt meg. **A játék már nem importálja és nem tölti be ezt az atlaszt.** A régi rajzokat nem jelöljük Kenney-féle CC0-tartalomnak.

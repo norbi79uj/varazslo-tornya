@@ -59,7 +59,7 @@ export function recordMerchant() {
     if (
       args[0]?.src?.includes("details.png") &&
       args[3] === 36 &&
-      args[4] === 16
+      args[4] === 12
     )
       window.__drawOrder.push("counter");
     if (

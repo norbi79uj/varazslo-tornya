@@ -170,3 +170,68 @@ test("ambient routines are transient, save schema stays v2 and new game/load res
   assert.equal(g.life.clock, 0);
   assert.equal(g.people.find((n) => n.id === "merchant").x, 338);
 });
+
+import {
+  VISUAL_GRID,
+  snap,
+  buildingPlacement,
+  actorPlacement,
+  propPlacement,
+  sortByGround,
+} from "../visual-layout.js";
+import { BUILDINGS } from "../world.js";
+import { VILLAGE_PROPS } from "../village-layout.js";
+import { ENVIRONMENT_SPRITES } from "../assets/kenney/environment.js";
+import { DETAIL_SPRITES } from "../assets/village/atlas.js";
+test("visual feet use the collision baseline and all static placements share one pixel grid", () => {
+  assert.equal(VISUAL_GRID.tile, VISUAL_GRID.sourceTile * 2);
+  for (const prop of VILLAGE_PROPS.filter((p) => p.foot)) {
+    const s = prop.kenney
+        ? ENVIRONMENT_SPRITES[prop.art]
+        : DETAIL_SPRITES[prop.art],
+      size = prop.kenney ? s : { w: s.w * 2, h: s.h * 2 },
+      p = propPlacement(prop, size);
+    assert.ok(Math.abs(p.ground - (prop.foot.y + prop.foot.h)) <= 1, prop.id);
+    assert.ok(Math.abs(p.cx - (prop.foot.x + prop.foot.w / 2)) <= 1, prop.id);
+    for (const n of [p.x, p.y, p.cx, p.ground]) assert.equal(n % 2, 0, prop.id);
+  }
+  for (const scale of [2, 3]) {
+    const p = actorPlacement({ x: 338.4, y: 225.2 }, scale);
+    assert.equal(p.y + p.h, snap(225.2 + 8));
+    assert.equal(p.x + p.w / 2, snap(338.4));
+  }
+});
+test("compact house projections leave clear space before the next row without moving doors", () => {
+  const houses = BUILDINGS.filter((b) => b.id !== "cabin").map((b) => ({
+    ...buildingPlacement(b),
+    id: b.id,
+  }));
+  for (const h of houses) {
+    assert.equal(h.ground - h.top, 80);
+    assert.equal(h.ground - h.wallY, 32);
+    assert.equal(h.width % 8, 0);
+  }
+  for (const a of houses)
+    for (const b of houses) {
+      if (
+        b.ground <= a.ground ||
+        a.x + a.width + 8 <= b.x - 8 ||
+        b.x + b.width + 8 <= a.x - 8
+      )
+        continue;
+      assert.ok(b.top - a.ground >= 24, a.id + " / " + b.id);
+    }
+});
+test("painter order follows ground contacts rather than the sprite rectangle tops", () => {
+  const counter = VILLAGE_PROPS.find((p) => p.id === "counter"),
+    ground = snap(counter.foot.y + counter.foot.h);
+  const entries = [
+    { id: "front", ...actorPlacement({ x: 338, y: 251 }) },
+    { id: "counter", ground },
+    { id: "behind", ...actorPlacement({ x: 338, y: 225 }) },
+  ];
+  assert.deepEqual(
+    sortByGround(entries).map((e) => e.id),
+    ["behind", "counter", "front"],
+  );
+});

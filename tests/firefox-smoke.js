@@ -4,6 +4,7 @@ import puppeteer from "puppeteer-core";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { BUILDINGS, OBJECTS } from "../world.js";
+import { recordLabels } from "./alignment-probe.js";
 import { recordMerchant } from "./village-probe.js";
 import { preparePagesFixture } from "./pages-fixture.js";
 import { SAVE_KEY } from "../engine.js";
@@ -587,10 +588,71 @@ try {
       for (const image of images) assert.ok(image.startsWith(prefix));
     },
   );
+  await scenario(
+    "visual feet/grid, compact houses, native canvas and a single contextual label",
+    async () => {
+      await page.setViewport({ width: 1280, height: 1100 });
+      await page.goto("http://127.0.0.1:8000/");
+      await click("#start");
+      const result = await page.evaluate(async () =>
+        (await import("/tests/alignment-probe.js")).probeVisualAlignment(),
+      );
+      assert.deepEqual(result.feet, result.expected);
+      assert.deepEqual(result.offGrid, []);
+      assert.ok(result.staticCalls > 200);
+      assert.equal(result.camera.x % 2, 0);
+      assert.equal(result.camera.y % 2, 0);
+      for (const house of result.houses)
+        assert.equal(house.ground - house.top, 80, house.id);
+      assert.equal(
+        await page.$eval("#game", (c) => c.getBoundingClientRect().width),
+        640,
+      );
+      await page.evaluate(recordLabels);
+      await checkpoint({ player: { x: 338, y: 251 } });
+      await new Promise((r) => setTimeout(r, 100));
+      assert.deepEqual(
+        await page.evaluate(() =>
+          window.__labels.filter((t) => t.startsWith("E · ")),
+        ),
+        ["E · Réka, a kereskedő"],
+      );
+      assert.deepEqual(
+        await page.evaluate(() =>
+          window.__labels.filter((t) =>
+            ["Boros", "Ilona", "Áron", "Márton", "Réka", "Dénes"].includes(t),
+          ),
+        ),
+        [],
+      );
+      await checkpoint({ player: { x: 130, y: 608 } });
+      await new Promise((r) => setTimeout(r, 100));
+      assert.deepEqual(
+        await page.evaluate(() =>
+          Object.entries(window.__labelPositions)
+            .filter(([t]) => t.startsWith("E · "))
+            .map(([, p]) => p.y),
+        ),
+        [23],
+      );
+      await checkpoint({ player: { x: 264, y: 210 } });
+      await new Promise((r) => setTimeout(r, 100));
+      assert.deepEqual(
+        await page.evaluate(() =>
+          window.__labels.filter((t) => t.startsWith("E · ")),
+        ),
+        [],
+      );
+      await page.screenshot({
+        path: "test-results/visual-alignment-firefox.png",
+        fullPage: true,
+      });
+    },
+  );
   assert.deepEqual(errors, []);
   assert.deepEqual(external, []);
   console.log(
-    `${passed}/10 scenarios passed on ${await browser.version()}; no JavaScript errors or external asset requests.`,
+    `${passed}/11 scenarios passed on ${await browser.version()}; no JavaScript errors or external asset requests.`,
   );
 } finally {
   await browser.close();

@@ -12,7 +12,13 @@ python3 -m http.server 8000
 
 Ezután nyisd meg a `http://localhost:8000` címet Firefoxban vagy Chromiumban. Alternatíva: `npm start`. A játék indításához nem kell `npm install`, build vagy internet. Az ES-modulok miatt az `index.html` közvetlen, `file://` megnyitása helyett az egyszerű helyi webszervert használd. Windows EXE nem készül.
 
-## Részletes, élő falu – aktuális fejlesztés
+## Vizuális javító kör
+
+A `fix/smaragdvolgy-visual-alignment` ág a működő `3cd5010` verzióból készül. Közös talppontok, egységes pixelrács, rövidebb és egymásba nem lógó házrajzok, helyes Y-rétegzés, rendezettebb főtér és javított stand készültek. Az NPC-nevek csak közeli interakciónál, egyetlen olvasható panelen jelennek meg. Asztali nézetben a játék natív 640 × 384 pixeles méretben látszik.
+
+A játékmenet, ütközések, mentés és NPC-rutinok forrása változatlan. A konkrét hibák és javítások: [VISUAL_FIXES.md](VISUAL_FIXES.md). A külön javító ágat a korábbi működő ágak megtartásával használjuk.
+
+## Részletes, élő falu – megőrzött kiindulás
 
 A `feat/smaragdvolgy-village-detail` ág a legutóbbi, sikeresen tesztelt `feat/kenney-graphics` (`ce6e837`) verzióból indul. Megmaradt a történet, az árak, a harc, a Dénes-küldetés, Tövisúr és a kézzel felfedezhető titkos pince.
 
@@ -133,13 +139,14 @@ Kimenet: `artifacts/previews/` (Git által figyelmen kívül hagyva). Ez csak fe
 - `village-life.js`: nem mentett NPC-rutinok és irányállások.
 - `village-layout.js`: díszletek, kertek és hozzájuk tartozó ütköző területek.
 - `village-view.js`: főtér, utak, tetők, falusi részletek és belső díszletek.
+- `visual-layout.js`: közös kirajzolási rács, talppontok és megjelenítési mélység, a játékállapot módosítása nélkül.
 - `game.js`: HUD, billentyűzet, érintés és játékhurok.
 - `tests/`, `tools/`: logikai/böngészős tesztek, eredeti grafikai forrás és képernyőkép-segédlet.
 
-Az aktuális fejlesztési ág **`feat/smaragdvolgy-village-detail`**. A `main`, `feat/browser-knight-game`, `feat/smaragdvolgy`, `feat/snes-falu-kornyek` és `feat/kenney-graphics` korábbi ágak megmaradnak.
+Az aktuális javító ág **`fix/smaragdvolgy-visual-alignment`**; kiindulása a megőrzött **`feat/smaragdvolgy-village-detail`**. A `main`, `feat/browser-knight-game`, `feat/smaragdvolgy`, `feat/snes-falu-kornyek` és `feat/kenney-graphics` korábbi ágak megmaradnak.
 
 ## GitHub Pages
 
 A játék build nélküli statikus HTML/CSS/JavaScript. Chromiumban és Firefoxban valódi helyi HTTP-alkönyvtárból is ellenőriztük, hogy az összes modul és mind a négy PNG relatív útvonalon betöltődik, és a lovag mozgatható. Ez a GitHub Pages projektoldalak `/varazslo-tornya/` jellegű elérési útját modellezi.
 
-**A GitHub Pages beállításait nem módosítottuk.** A jelenlegi közzétételi ágat az API `Forbidden` válasza miatt nem tudtuk kiolvasni. Ha a Pages másik ágat szolgál ki, az új változat megjelenítéséhez a felhasználónak kell átállítania a forráságat a Settings → Pages oldalon (ág alapú közzétételnél: `feat/smaragdvolgy-village-detail`, `/(root)`), vagy a meglévő közzétételi folyamatba emelnie a változásokat. Az ág GitHubra feltöltése önmagában nem váltja át a közzétett oldalt.
+**A GitHub Pages beállításait nem módosítottuk.** A jelenlegi közzétételi ágat az API `Forbidden` válasza miatt nem tudtuk kiolvasni. Ha a Pages másik ágat szolgál ki, az új változat megjelenítéséhez a felhasználónak kell átállítania a forráságat a Settings → Pages oldalon (ág alapú közzétételnél: `fix/smaragdvolgy-visual-alignment`, `/(root)`), vagy a meglévő közzétételi folyamatba emelnie a változásokat. Az ág GitHubra feltöltése önmagában nem váltja át a közzétett oldalt.

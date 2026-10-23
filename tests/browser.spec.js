@@ -623,3 +623,58 @@ test("GitHub Pages style subdirectory loads all local images and supports moveme
   for (const path of png) expect(path.startsWith(prefix)).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test("visual alignment: shared feet and grid, compact houses and one nearby readable label", async ({
+  page,
+}) => {
+  const { recordLabels } = await import("./alignment-probe.js");
+  const result = await page.evaluate(async () =>
+    (await import("/tests/alignment-probe.js")).probeVisualAlignment(),
+  );
+  expect(result.feet).toEqual(result.expected);
+  expect(result.offGrid).toEqual([]);
+  expect(result.staticCalls).toBeGreaterThan(200);
+  expect(result.camera.x % 2).toBe(0);
+  expect(result.camera.y % 2).toBe(0);
+  for (const h of result.houses) expect(h.ground - h.top, h.id).toBe(80);
+  expect(
+    await page
+      .locator("#game")
+      .evaluate((c) => c.getBoundingClientRect().width),
+  ).toBe(640);
+  await page.evaluate(recordLabels);
+  await checkpoint(page, { player: { x: 338, y: 251 } });
+  await page.waitForTimeout(80);
+  expect(
+    await page.evaluate(() =>
+      window.__labels.filter((t) => t.startsWith("E · ")),
+    ),
+  ).toEqual(["E · Réka, a kereskedő"]);
+  expect(
+    await page.evaluate(() =>
+      window.__labels.filter((t) =>
+        ["Boros", "Ilona", "Áron", "Márton", "Réka", "Dénes"].includes(t),
+      ),
+    ),
+  ).toEqual([]);
+  await checkpoint(page, { player: { x: 130, y: 608 } });
+  await page.waitForTimeout(80);
+  expect(
+    await page.evaluate(() =>
+      Object.entries(window.__labelPositions)
+        .filter(([t]) => t.startsWith("E · "))
+        .map(([, p]) => p.y),
+    ),
+  ).toEqual([23]);
+  await checkpoint(page, { player: { x: 264, y: 210 } });
+  await page.waitForTimeout(80);
+  expect(
+    await page.evaluate(() =>
+      window.__labels.filter((t) => t.startsWith("E · ")),
+    ),
+  ).toEqual([]);
+  await page.screenshot({
+    path: "test-results/visual-alignment-chromium.png",
+    fullPage: true,
+  });
+});

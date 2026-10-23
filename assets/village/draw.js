@@ -7,14 +7,25 @@ export function drawDetail(
   name,
   x,
   y,
-  { flip = false, scale = 2 } = {},
+  { flip = false, scale = 2, crop = null } = {},
 ) {
   const s = DETAIL_SPRITES[name];
   if (!s) throw Error("Hiányzó falusi grafika: " + name);
+  const region = crop || { x: 0, y: 0, w: s.w, h: s.h };
   ctx.save();
   ctx.imageSmoothingEnabled = false;
-  ctx.translate(Math.round(x) + (flip ? s.w * scale : 0), Math.round(y));
+  ctx.translate(Math.round(x) + (flip ? region.w * scale : 0), Math.round(y));
   if (flip) ctx.scale(-1, 1);
-  ctx.drawImage(image, s.x, s.y, s.w, s.h, 0, 0, s.w * scale, s.h * scale);
+  ctx.drawImage(
+    image,
+    s.x + region.x,
+    s.y + region.y,
+    region.w,
+    region.h,
+    0,
+    0,
+    region.w * scale,
+    region.h * scale,
+  );
   ctx.restore();
 }

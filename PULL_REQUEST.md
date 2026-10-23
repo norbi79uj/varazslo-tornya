@@ -1,11 +1,9 @@
-# Smaragdvölgy: részletes SNES-falu és élő falusi környezet
+# Smaragdvölgy: vizuális rács, talppontok és rétegzés javítása
 
-Smaragdvölgy kövezett főteret, kerek kutat, négy cserepezett tetőcsaládot, kerteket, cégtáblákat, részletes kovács- és favágóműhelyt, vászontetős piacot és bútorozott fogadót kap. A lakók rövid útvonalakat járnak be, dolgoznak és beszélgetéskor megállnak, a játékos felé fordulnak. A karakterek négy irányállással jelennek meg; tyúkok, pillangók, füst, víz és halk környezeti hangok egészítik ki a falut.
+A túl magas házrajzok ráértek a következő sorra, az NPC-k rajzolt talpa eltért az ütközési lábrésztől, a stand részei és a folyamatos nevek pedig zsúfolták a főteret. Ez a külön javító kör közös pixelrácsot és talppontokat, 80 pixeles házrajzokat, kültéren és beltéren egységes Y-rendezést, helyesen illeszkedő piaci tetőt/pultot és egyetlen közeli, kontrasztos interakciós feliratot vezet be.
 
-Kiindulás a működő `feat/kenney-graphics` (`ce6e837`), új ág: `feat/smaragdvolgy-village-detail`. A történet, árak, ellenfelek, Dénes-küldetés, Tövisúr, ajtók és titkos pince megmaradnak. A mentési séma v2, az NPC-rutinok nem mentettek; új díszletbe eső régi pozíció közeli járható helyre kerül. A rajzolás és interakció azonos NPC-pozíciókat használ.
+Kiindulás: `feat/smaragdvolgy-village-detail`, `3cd5010`; javító ág: `fix/smaragdvolgy-visual-alignment`. A játékmenet, logikai pozíciók, ütközések, mentés, küldetések, harc, NPC-rutinok és titkos pince forrása változatlan. Minden PNG és licenc is bájtazonos. Az igazítások kizárólag a megjelenítési rétegben vannak; részletes hibajegyzék: VISUAL_FIXES.md.
 
-A három eredeti Kenney CC0-lap és licence változatlan. A hiányzó részletekhez 72 saját CC0 pixelrajz készült, helyi PNG-vel és reprodukálható JavaScript-forrással. Az eredet és hozzárendelések az ASSET_CREDITS.md fájlban szerepelnek.
+Ellenőrzés: **37/37** Node-teszt, **13/13** Chromium- és **11/11** Firefox-forgatókönyv. Mindkét böngészőben külön megtekintett főtér, piac, házak, ülő Áron, kovács és favágó. A valódi Canvas-hívásokból ellenőrzött talppontok, pixelrács, takarási sorrend és feliratok mellett a teljes korábbi játékregresszió is lefutott. Részletek: TEST_RESULTS.md.
 
-Ellenőrzés: `npm test` **34/34**, Chromium **12/12**, valódi Firefox ESR **10/10**. Mozgás, harc, NPC-k, kereskedés, gyógyítás, teljes fő küldetés, főellenfél, titkos pince, mentés, kilenc ajtó, új ütközések, négy irányállás, NPC-mozgás/párbeszédszünet és pult mögötti/előtti helyes rétegzés ellenőrizve. Tíz valódi játékállapot képe megtekintve, saját grafika újraépítése bájtazonos. Részletek és korlátok: TEST_RESULTS.md.
-
-A GitHub Pages jellegű HTTP-alkönyvtáras indítás mindkét böngészőben működik. A közzétételi beállításokhoz nem nyúltunk; az ág publikálásához szükséges kézi lépést a README leírja. A korábbi ágak változatlanok. Windows EXE nem készül.
+A működő ágak és a GitHub Pages közzétételi beállításai megmaradnak.
