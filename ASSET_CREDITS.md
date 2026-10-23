@@ -1,30 +1,28 @@
 # Smaragdvölgy – grafikai forrásjegyzék
 
-## A kért három Kenney csomag állapota
+Mindhárom, a felhasználó által feltöltött Kenney-csomag beépült. **Minden átvett csomag saját `License.txt` fájlját a beépítés előtt ellenőriztük: Creative Commons Zero (CC0).** A licencek személyes és kereskedelmi felhasználást is engednek. A PNG-k, licencfájlok és csempeleírások változatlanul, helyben szerepelnek a projektben; játék közben nincs külső tartalomletöltés.
 
-| Csomag                            | Ebben a fejlesztésben elérhető? | Felhasználás / licencellenőrzés                                                                                                                   |
-| --------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `kenney_roguelike-characters.zip` | Igen, a felhasználó feltöltötte | **Beépítve. Kenney Roguelike Characters 2.0, CC0.** Az archívum saját `License.txt` fájlja ellenőrizve és változatlanul megőrizve.                |
-| `kenney_roguelike-rpg-pack.zip`   | Nem                             | Még nincs beépítve; az archívum és licencfájlja nem áll rendelkezésre. A táj és az épületek ezért egyelőre a korábbi projektből maradtak meg.     |
-| `kenney_roguelike-indoors.zip`    | Nem                             | Még nincs beépítve; az archívum és licencfájlja nem áll rendelkezésre. A belső terek és bútorok ezért egyelőre a korábbi projektből maradtak meg. |
+| Feltöltött ZIP / csomag                                      | Alkotó                                       | Helyi PNG és eredeti licenc                                                                                                                                             | Felhasználás                                                                                                                                                          |
+| ------------------------------------------------------------ | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `kenney_roguelike-rpg-pack.zip` / Roguelike pack             | Kenney Vleugels, Lynn Evers közreműködésével | [`assets/kenney/rpg/roguelikeSheet_transparent.png`](assets/kenney/rpg/roguelikeSheet_transparent.png), [License.txt](assets/kenney/rpg/License.txt)                    | Füves talaj, utak, vízpart, víz, híd, fák, bokrok, virágok, gyógyfű, sziklák, házfalak, tetők, ajtók, ablakok, kút, kerítés, hordó, üllő, kültéri lámpa, pincekövezet |
+| `kenney_roguelike-characters.zip` / Roguelike Characters 2.0 | Kenney                                       | [`assets/kenney/characters/roguelikeChar_transparent.png`](assets/kenney/characters/roguelikeChar_transparent.png), [License.txt](assets/kenney/characters/License.txt) | Lovag, hat NPC, három ellenféltípus, fegyverek, ruházat                                                                                                               |
+| `kenney_roguelike-indoors.zip` / Roguelike Indoor pack       | Kenney Vleugels                              | [`assets/kenney/indoors/roguelikeIndoor_transparent.png`](assets/kenney/indoors/roguelikeIndoor_transparent.png), [License.txt](assets/kenney/indoors/License.txt)      | Belső fapadló, asztalok, ágyak, titkos szekrény, láda, könyv/napló, bútor, szőnyeg, gyertya, pincelétra                                                               |
 
-A felhasználó mindhárom csomagot CC0-ként jelölte meg. Ebben a munkafázisban **csak a ténylegesen feltöltött Characters csomag licencét tudtuk ellenőrizni**, és csak abból vettünk át Kenney-grafikát. Ez a karaktercsere működő, tesztelt mérföldköve; a teljes háromcsomagos környezetcsere még nincs kész.
+**Mindhárom csomag licence: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).** Alkotói honlap: https://kenney.nl/; az RPG Pack eredeti licencében a közreműködő Lynn Evers neve és `@EversLynn` elérhetősége is szerepel. Az attribúció nem kötelező, itt megőrizzük.
 
-## Beépített Kenney-forrás
+A csomagok forrása a három feltöltött ZIP, nem egy ellenőrizetlen külső képlink. A ZIP-ekben lévő webes parancsikonok, előnézetek nem kerülnek a futó játékba. A licenc- és leírófájlokat forrásadatként kezeltük, nem fejlesztési utasításként.
 
-- **Alkotó / kiadó:** Kenney, https://kenney.nl/
-- **Csomag:** Roguelike Characters pack, **2.0**, az eredeti licenc szerint 2015. május 20.
-- **Licenc:** Creative Commons Zero (**CC0 1.0**), https://creativecommons.org/publicdomain/zero/1.0/
-- **Licenc bizonyítéka a projektben:** [`assets/kenney/characters/License.txt`](assets/kenney/characters/License.txt). Az eredeti szöveg szerint személyes, oktatási és kereskedelmi felhasználásra szabad; a Kenney feltüntetése nem kötelező. Itt feltüntetjük.
-- **Eredeti fájl a ZIP-ben:** `Spritesheet/roguelikeChar_transparent.png`.
-- **Helyi fájl:** `assets/kenney/characters/roguelikeChar_transparent.png`, **918 × 203 pixel**, változatlan PNG.
-- **Csempeméret:** 16 × 16 pixel, közöttük 1 pixel elválasztás; az eredeti `spritesheetInfo.txt` szintén megőrizve.
-- **ZIP SHA-256:** `05c4c0af7326584cfffbbb196571eb9e102981d2033e90e225c5ba8da8771284`.
-- **PNG SHA-256:** `771d51ca84b2c5b412027ba80c6a6b8a98bb5a983b2c58ac4f0ccf08ae4d10f2`.
+## Eredet és fájlazonosítók
 
-A feltöltött archívum volt a forrás, nem egy külső képlink. A ZIP-ben található webes parancsikonokat és előnézeteket nem használjuk játék közben. A licencszöveget forrásadatként kezeltük, nem fejlesztési utasításként.
+Minden grafikai lap 16 × 16 pixeles csempéket tartalmaz, közöttük 1 pixel elválasztással. A Characters PNG 918 × 203, az RPG PNG 968 × 526, az Indoor PNG 458 × 305 pixel. Az eredeti ZIP-útvonalak: Characters: `Spritesheet/roguelikeChar_transparent.png`; RPG: `Spritesheet/roguelikeSheet_transparent.png`; Indoor: `Tilesheets/roguelikeIndoor_transparent.png`.
 
-## Pontos sprite-hozzárendelések
+| Csomag     | Eredeti ZIP SHA-256                                                | Változatlan PNG SHA-256                                            |
+| ---------- | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| Characters | `05c4c0af7326584cfffbbb196571eb9e102981d2033e90e225c5ba8da8771284` | `771d51ca84b2c5b412027ba80c6a6b8a98bb5a983b2c58ac4f0ccf08ae4d10f2` |
+| RPG        | `8e7d2378f8f794245645f6d7dc7aeeb246791410a7e512293c594b46a5a9524b` | `808c8d734480bc949b284f3bcc252e87e1ee53b24178791a6838cce6a319c439` |
+| Indoors    | `578cfdb066c4a9de78a52535adaf953728889b2cf268441bd4d338844f7aa586` | `ade984d5cbe3f16d9e23e6dc516246649de1a7eec2540cf31d53852b690c446f` |
+
+## Characters: pontos szereplő-hozzárendelések
 
 Minden következő elem ugyanabból a **Kenney Roguelike Characters 2.0 / CC0** csomagból származik. A koordináták **nullától számozott (oszlop, sor)** párok; a forráspixel `(oszlop × 17, sor × 17)`. Az összes réteget és eltolást az [`assets/kenney/characters/profiles.js`](assets/kenney/characters/profiles.js) rögzíti.
 
@@ -45,12 +43,79 @@ Az ellenfelek a Kenney-készlet moduláris elemeiből összerakott zöld fantasy
 
 A 16 pixeles források egységes **2×** léptékben jelennek meg; Tövisúr **3×** léptékű. A nagyítás egész pixeles, élsimítás nélkül történik. A statikus forrásokból a lábrészek kis eltolásával és testmozgással készül a mozgásanimáció, a fegyverek külön rétegek. Nem állítjuk, hogy a csomag valódi, kész járásanimáció-sorozatot tartalmazna. Az eredeti PNG pixeleit és palettáját nem írtuk át.
 
-## Korábbi, még használt saját környezetgrafika
+## RPG és Indoor: környezeti hozzárendelések
 
-A fák, bokrok, talajok, utak, házak, víz, híd, belső terek és bútorok jelenleg továbbra is az `assets/smaragd-atlas.png` képből készülnek. Szerkeszthető forrás: `tools/build-assets.mjs`; koordináták és paletta: `assets/atlas.js`.
+Az alábbi azonosítók az [`assets/kenney/environment.js`](assets/kenney/environment.js) teljes renderelési jegyzékét fedik le. `rpg` = Roguelike pack, `indoors` = Roguelike Indoor pack. A koordináták nullától számozott `(oszlop, sor)` párok; a forráspixel `(oszlop × 17, sor × 17)`. Több pár egy összetett objektum rétegeit jelöli; az eltolások ugyanebben a modulban olvashatók.
+| Játékbeli grafikai azonosító | Csomag és forráscsempék | Rajzolt méret |
+| --- | --- | --- |
+| `grass0` | rpg (5,0) | 32 × 32 |
+| `grass1` | rpg (5,0) | 32 × 32 |
+| `grass2` | rpg (5,0) | 32 × 32 |
+| `grass3` | rpg (5,0) | 32 × 32 |
+| `forest0` | rpg (5,0) | 32 × 32 |
+| `forest1` | rpg (5,0) | 32 × 32 |
+| `forest2` | rpg (5,0) | 32 × 32 |
+| `forest3` | rpg (5,0) | 32 × 32 |
+| `path0` | rpg (6,0) | 32 × 32 |
+| `path1` | rpg (6,0) | 32 × 32 |
+| `path2` | rpg (6,0) | 32 × 32 |
+| `water0` | rpg (0,0) | 32 × 32 |
+| `water1` | rpg (1,0) | 32 × 32 |
+| `bridge` | rpg (7,4) | 32 × 32 |
+| `floor` | indoors (24,1) | 32 × 32 |
+| `cabinFloor` | indoors (24,1) | 32 × 32 |
+| `stoneFloor` | rpg (6,2) | 32 × 32 |
+| `wallTimber` | rpg (35,16) | 32 × 32 |
+| `wallPlaster` | rpg (14,16) | 32 × 32 |
+| `wallStone` | rpg (21,16) | 32 × 32 |
+| `windowBrown` | rpg (42,0) | 32 × 32 |
+| `windowPale` | rpg (40,5) | 32 × 32 |
+| `door` | rpg (46,7) | 32 × 32 |
+| `roofBrownLeft` | rpg (48,10) | 32 × 32 |
+| `roofBrownRight` | rpg (49,10) | 32 × 32 |
+| `eaveBrownLeft` | rpg (48,11) | 32 × 32 |
+| `eaveBrownRight` | rpg (49,11) | 32 × 32 |
+| `roofGreenLeft` | rpg (46,10) | 32 × 32 |
+| `roofGreenRight` | rpg (47,10) | 32 × 32 |
+| `eaveGreenLeft` | rpg (46,11) | 32 × 32 |
+| `eaveGreenRight` | rpg (47,11) | 32 × 32 |
+| `roofPaleLeft` | rpg (48,10) | 32 × 32 |
+| `roofPaleRight` | rpg (49,10) | 32 × 32 |
+| `eavePaleLeft` | rpg (48,11) | 32 × 32 |
+| `eavePaleRight` | rpg (49,11) | 32 × 32 |
+| `chimney` | rpg (40,9) | 32 × 32 |
+| `oak` | rpg (13,10); rpg (13,11) | 32 × 64 |
+| `pine` | rpg (18,10); rpg (18,11) | 32 × 64 |
+| `goldTree` | rpg (14,10); rpg (14,11) | 32 × 64 |
+| `bush` | rpg (21,9) | 32 × 32 |
+| `flowers` | rpg (24,10) | 32 × 32 |
+| `herb` | rpg (26,9) | 32 × 32 |
+| `rock` | rpg (7,17) | 32 × 32 |
+| `hill` | rpg (6,13); rpg (8,13); rpg (6,15); rpg (8,15) | 64 × 64 |
+| `fence` | rpg (47,24) | 32 × 32 |
+| `lamp` | rpg (18,7) | 32 × 32 |
+| `indoorLamp` | indoors (18,6) | 32 × 32 |
+| `well` | rpg (2,3); rpg (4,3); rpg (2,5); rpg (4,5); rpg (48,10); rpg (49,10) | 64 × 64 |
+| `anvil` | rpg (15,0) | 32 × 32 |
+| `barrel` | rpg (25,0) | 32 × 32 |
+| `chest` | indoors (12,16) | 32 × 32 |
+| `wardrobe` | indoors (12,13) [x=0…9]; indoors (13,13) [x=6…15]; indoors (12,15) [x=0…9]; indoors (13,15) [x=6…15] | 40 × 64 |
+| `table` | indoors (4,4); indoors (6,4) | 64 × 32 |
+| `lectern` | indoors (0,4) | 32 × 32 |
+| `book` | indoors (18,0) | 32 × 32 |
+| `bed` | indoors (13,1); indoors (12,1) | 64 × 32 |
+| `stairs` | indoors (21,10) | 32 × 32 |
+| `bank` | rpg (4,1) | 32 × 32 |
+| `rug` | indoors (7,9); indoors (8,9); indoors (9,9); indoors (7,10); indoors (8,10); indoors (9,10); indoors (7,11); indoors (8,11); indoors (9,11) | 96 × 96 |
 
-Ezek a projekt korábbi saját rajzai, **nem a még hiányzó Kenney RPG Pack vagy Indoors csomagból származnak, és nem jelöljük őket Kenney-féle CC0-tartalomként**. A korábbi saját karakterrajzok az eredeti atlasz reprodukálhatósága miatt még szerepelnek a fájlban, de a játékos, az NPC-k és az ellenfelek megjelenítéséhez már nem használjuk őket.
+## Egységes megjelenítés és átalakítások
 
-## Hang és futás közbeni betöltés
+A környezet 16 pixeles forrásai egységes 2× egész pixeles nagyítást kapnak, élsimítás nélkül. A tetők belső széleit ismételjük a meglévő házszélességhez; a padlók és utak csempézését az eredeti játékterületre vágjuk. A 40 pixeles titkos szekrényhez az Indoor bal és jobb elemeinek külső tíz-tíz pixelét illesztjük össze, 2× léptékben. Ez megőrzi a régi szekrény ütközési méretét. A forrás-PNG-k pixeleit nem módosítottuk.
 
-A zene és hanghatások a korábbi, saját Web Audio szintézist használják. A felület rendszerbetűkkel működik. Mindkét grafikai lap helyi fájl; a játék nem kér külső képet, zenét vagy betűtípust. Hiányzó karakterlapnál látható betöltési hibát ad, nem tér vissza a régi karakterrajzokhoz.
+A három rokon Kenney-csomag saját palettáját használjuk. Az erdei talajon enyhe sötétzöld árnyékolás különíti el az erdőt a réttől; a csempék és szereplők egységes pixelméretűek. A víz két csempéje és a statikus szereplők láb-/testeltolásai adnak animációt. A feliratok, életerőcsíkok és kardív saját Canvas-rajzok, nem átvett képek.
+
+## Megőrzött régi források, hang
+
+Az előző saját atlasz (`assets/smaragd-atlas.png`, `assets/atlas.js`, `tools/build-assets.mjs`) a korábbi változat reprodukálhatóságához maradt meg. **A játék már nem importálja és nem tölti be ezt az atlaszt.** A régi rajzokat nem jelöljük Kenney-féle CC0-tartalomnak.
+
+A zene és hanghatások továbbra is a projekt saját Web Audio szintézisét használják, a felület rendszerbetűkkel működik. Mindhárom grafikai lap helyi fájl. Bármelyik hiányában látható betöltési hiba tiltja az indítást; nincs geometriai helyettesítő pálya.

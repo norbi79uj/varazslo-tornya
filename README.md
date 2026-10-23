@@ -14,9 +14,9 @@ Ezután nyisd meg a `http://localhost:8000` címet Firefoxban vagy Chromiumban. 
 
 ## Kenney grafikai frissítés – aktuális állapot
 
-A `feat/kenney-graphics` ág a korábbi működő verziót fejleszti tovább. A ténylegesen feltöltött **Kenney Roguelike Characters 2.0 (CC0)** csomagból új lovag-, NPC- és ellenfélgrafikák kerültek be, egységes pixelmérettel. A játékszabályok, mentési formátum, küldetések, ütközések és a titkos pince nem változtak.
+A `feat/kenney-graphics` ág a korábbi működő verziót fejleszti tovább. A felhasználó mindhárom feltöltött, saját licencfájljával igazolt **Kenney CC0** csomagja beépült: **Roguelike pack** (táj, fák, épületek), **Roguelike Characters 2.0** (lovag, NPC-k, ellenfelek), **Roguelike Indoor pack** (belső terek, bútorok, titkos szekrény, pince).
 
-**A környezetcsere még nem teljes:** a `kenney_roguelike-rpg-pack.zip` és `kenney_roguelike-indoors.zip` nincs a rendelkezésre álló mellékletek között. Ezek megérkezéséig a tájakat, házakat és bútorokat a korábbi saját atlasz rajzolja. Pontos forrás- és licencjegyzék: [ASSET_CREDITS.md](ASSET_CREDITS.md).
+A három PNG változatlanul, helyben található az `assets/kenney/` alatt. A grafikai csere egységes egész pixeles léptéket használ; a játékszabályok, mentési formátum, küldetések, ütközések és a titkos pince megmaradtak. Források és licencek: [ASSET_CREDITS.md](ASSET_CREDITS.md). Tényleges böngészős ellenőrzések: [TEST_RESULTS.md](TEST_RESULTS.md).
 
 ## Vezérlés
 
@@ -36,7 +36,7 @@ A `feat/kenney-graphics` ág a korábbi működő verziót fejleszti tovább. A 
 
 ## Bejárható világ
 
-A kültéri pálya **1920 × 640 pixel**, **16 × 16 pixeles alapcsempékkel**, két tengelyen követő kamerával.
+A kültéri pálya **1920 × 640 pixel**, **16 × 16 pixeles, 2× léptékben rajzolt forráscsempékkel**, két tengelyen követő kamerával.
 
 - **Smaragdvölgy:** hat lakóház, kovácsműhely, fogadó és kereskedő boltja. Mind a kilenc ajtóhoz be lehet menni E-vel; a kijáratok visszavisznek az adott épület elé. A házak bútorozottak, a fontos üzletekben a tulajdonos is megszólítható. A főutca, a déli keresztutca és kisebb ösvények mellett kút, kertek, virágágyások, kerítések és lámpások állnak.
 - **Faluszéli rét:** gyengébb ellenfelek, egyszer gyűjthető gyógyfüvek, virágok, bokrok, sziklás magaslat. A patakot csak a fahídon lehet átszelni.
@@ -80,17 +80,13 @@ A mentés nem automatikus, nem felhőalapú. Ugyanaz a böngészőprofil és cí
 
 ## Pixelgrafika és hang
 
-A környezet a korábbi helyi, 74 elemes PNG-atlaszt használja. A karaktereket külön, módosítatlan Kenney PNG-lap adja; a 16 pixeles források 2× (főellenfélnél 3×) egész léptékben, élsimítás nélkül jelennek meg. A víz és szereplők animáltak. A források és a külső csomagok elérhetősége az [ASSET_CREDITS.md](ASSET_CREDITS.md) fájlban olvasható. Külső Zelda-/Secret of Mana-grafikát nem tartalmaz.
+A tájakat, házakat és belső tereket az RPG és Indoor lapok, a karaktereket a Characters lap adja. Minden forrás 16 pixeles, egységes 2× (főellenfélnél 3×) egész léptékben, élsimítás nélkül jelenik meg. A víz és szereplők animáltak. A források, a saját animáció módszere, a Kenney-alkotók és a licencek az [ASSET_CREDITS.md](ASSET_CREDITS.md) fájlban olvashatók.
 
 A nyugodt falusi, titokzatos erdei és gyorsabb főellenfél-dallam, valamint a retro hanghatások saját Web Audio szintézissel készülnek. Nincs külső zene vagy hangfelvétel.
 
-Az eredeti grafikai forrás újraépíthető külső csomag nélkül:
+A környezet csempéi és rétegei az `assets/kenney/environment.js`, a szereplők az `assets/kenney/characters/profiles.js` fájlban szerkeszthetők. Hiányzó PNG esetén a játék látható betöltési hibával áll meg.
 
-```sh
-npm run assets:build
-```
-
-A `tools/build-assets.mjs` a korábbi környezetrajzok forrása, az `assets/atlas.js` a generált koordinátajegyzék. Ez az újraépítés nem írja át a Kenney-fájlokat. A Kenney szereplők rétegei és eltolásai az `assets/kenney/characters/profiles.js` fájlban szerkeszthetők. Hiányzó PNG esetén a játék látható betöltési hibával áll meg, nem helyettesíti a grafikát geometriai alakzatokkal.
+A `tools/build-assets.mjs`, az `assets/atlas.js` és az `assets/smaragd-atlas.png` történeti forrásként megmaradt. Az `npm run assets:build` csak ezt a régi, már nem betöltött atlaszt építi újra; a Kenney-grafikához nincs szükség buildre.
 
 ## Fejlesztői ellenőrzések
 
@@ -127,4 +123,4 @@ Kimenet: `artifacts/previews/` (Git által figyelmen kívül hagyva). Ez csak fe
 - `game.js`: HUD, billentyűzet, érintés és játékhurok.
 - `tests/`, `tools/`: logikai/böngészős tesztek, eredeti grafikai forrás és képernyőkép-segédlet.
 
-Az aktuális karaktercsere a **`feat/kenney-graphics`** ágon készül, a korábbi **`feat/snes-falu-kornyek`** működő verziójából. Megőrzi a korábbi Smaragdvölgy működő rendszereit és történetét. A `main`, `feat/browser-knight-game`, `feat/smaragdvolgy` és `feat/snes-falu-kornyek` korábbi ágai változatlanok. A felhasználó jóváhagyása után az ág GitHubra került; a távoli commitot és a játékfájlokat visszaellenőriztük.
+Az aktuális teljes grafikai csere a **`feat/kenney-graphics`** ágon készül, a korábbi **`feat/snes-falu-kornyek`** működő verziójából. Megőrzi a korábbi Smaragdvölgy működő rendszereit és történetét. A `main`, `feat/browser-knight-game`, `feat/smaragdvolgy` és `feat/snes-falu-kornyek` korábbi ágai változatlanok. Az új grafikai változat ezen a külön fejlesztési ágon kerül GitHubra.

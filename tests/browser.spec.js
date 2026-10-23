@@ -260,57 +260,60 @@ test("audio activation, corrupt saves, restart confirmation and mobile layout", 
   expect(errors).toEqual([]);
 });
 
-test("local pixel atlas loads and missing graphics fail visibly instead of drawing placeholders", async ({
+test("all local Kenney environments render at native scale; missing sheets block startup", async ({
   page,
 }) => {
-  const response = await page.request.get("/assets/smaragd-atlas.png");
-  expect(response.ok()).toBe(true);
-  expect(response.headers()["content-type"]).toContain("image/png");
-  for (const path of [
-    "/",
-    "/style.css",
-    "/game.js",
-    "/engine.js",
-    "/renderer.js",
-  ]) {
-    expect((await page.request.get(path)).ok()).toBe(true);
+  const external = [],
+    legacy = [];
+  page.on("request", (r) => {
+    if (
+      !r.url().startsWith("http://127.0.0.1:8000") &&
+      !r.url().startsWith("data:")
+    )
+      external.push(r.url());
+    if (r.url().includes("smaragd-atlas")) legacy.push(r.url());
+  });
+  const result = await page.evaluate(async () =>
+    (await import("/tests/environment-probe.js")).probeEnvironmentGraphics(),
+  );
+  expect(result.sheets).toEqual([
+    { pack: "rpg", ok: true, type: "image/png", width: 968, height: 526 },
+    { pack: "indoors", ok: true, type: "image/png", width: 458, height: 305 },
+  ]);
+  expect(result.sprites.length).toBeGreaterThan(50);
+  for (const sprite of result.sprites) {
+    expect(sprite.visible, sprite.name).toBeGreaterThan(30);
+    expect(sprite.nativePixels, sprite.name).toBe(true);
   }
+  expect(result.colors).toBeGreaterThan(20);
   expect(
     await page
       .locator("#game")
       .evaluate((c) => getComputedStyle(c).imageRendering),
   ).toBe("pixelated");
-  const manifest = await page.evaluate(async () => {
-    const { ATLAS } = await import("/assets/atlas.js");
-    return {
-      count: Object.keys(ATLAS).length,
-      hero: ATLAS.hero1,
-      tree: ATLAS.oak,
-    };
-  });
-  expect(manifest.count).toBe(74);
-  expect(manifest.hero.w).toBe(24);
-  expect(manifest.tree.h).toBe(64);
-  const colors = await page.locator("#game").evaluate((c) => {
-    const p = c.getContext("2d").getImageData(0, 0, c.width, c.height).data;
-    const set = new Set();
-    for (let i = 0; i < p.length; i += 4)
-      set.add(`${p[i]},${p[i + 1]},${p[i + 2]}`);
-    return set.size;
-  });
-  expect(colors).toBeGreaterThan(20);
+  for (const path of [
+    "**/assets/kenney/rpg/*.png",
+    "**/assets/kenney/indoors/*.png",
+  ]) {
+    await page.route(path, (route) => route.abort());
+    await page.reload();
+    await expect(page.locator("#overlay h2")).toHaveText(
+      "A grafika nem tölthető be",
+    );
+    await expect(page.locator("#start")).toBeDisabled();
+    await page.keyboard.press("r");
+    await page.locator("#load").click();
+    await expect(page.locator("#overlay h2")).toHaveText(
+      "A grafika nem tölthető be",
+    );
+    await page.unroute(path);
+  }
   await page.route("**/assets/smaragd-atlas.png", (route) => route.abort());
   await page.reload();
-  await expect(page.locator("#overlay h2")).toHaveText(
-    "A grafika nem tölthető be",
-  );
-  await expect(page.locator("#start")).toBeDisabled();
-  await page.keyboard.press("r");
-  await page.locator("#load").click();
-  await expect(page.locator("#overlay")).toBeVisible();
-  await expect(page.locator("#overlay h2")).toHaveText(
-    "A grafika nem tölthető be",
-  );
+  await page.locator("#start").click();
+  await expect(page.locator("#overlay")).not.toBeVisible();
+  expect(legacy).toEqual([]);
+  expect(external).toEqual([]);
 });
 test("six homes, functional interiors, door returns, interior save and furniture collision", async ({
   page,

@@ -7,7 +7,12 @@ import {
   DECOR,
   STREAM,
 } from "./world.js";
-import { ATLAS, PALETTE } from "./assets/atlas.js";
+import {
+  ENVIRONMENT_SHEETS,
+  ENVIRONMENT_SPRITES,
+  KENNEY_COLORS as PALETTE,
+  drawEnvironmentSprite,
+} from "./assets/kenney/environment.js";
 import {
   CHARACTER_SHEET,
   drawKenneyActor,
@@ -33,33 +38,57 @@ export class Renderer {
       image.src = url;
       return { image, ready };
     };
-    const landscape = load(
-      new URL("./assets/smaragd-atlas.png", import.meta.url).href,
+    this.textures = {};
+    const pending = Object.entries(ENVIRONMENT_SHEETS).map(
+      ([pack, definition]) => {
+        const texture = load(definition.url);
+        this.textures[pack] = texture.image;
+        return texture.ready;
+      },
     );
     const characters = load(CHARACTER_SHEET.url);
-    this.image = landscape.image;
     this.characters = characters.image;
-    this.ready = Promise.all([landscape.ready, characters.ready]);
+    this.ready = Promise.all([...pending, characters.ready]);
   }
   rect(x, y, w, h, color) {
     this.ctx.fillStyle = color;
     this.ctx.fillRect(Math.round(x), Math.round(y), w, h);
   }
-  sprite(name, x, y, w, h, flip = false) {
-    const a = ATLAS[name];
-    if (!a) throw Error(`Unknown sprite: ${name}`);
-    const c = this.ctx;
-    w ??= a.w;
-    h ??= a.h;
-    x = Math.round(x);
-    y = Math.round(y);
-    if (flip) {
-      c.save();
-      c.translate(x + w, y);
-      c.scale(-1, 1);
-      c.drawImage(this.image, a.x, a.y, a.w, a.h, 0, 0, w, h);
-      c.restore();
-    } else c.drawImage(this.image, a.x, a.y, a.w, a.h, x, y, w, h);
+  sprite(name, x, y, flip = false) {
+    drawEnvironmentSprite(this.ctx, this.textures, name, x, y, { flip });
+  }
+  // Repetition is clipped to the old gameplay footprint; source pixels remain 2x.
+  texture(name, x, y, w, h) {
+    const c = this.ctx,
+      a = ENVIRONMENT_SPRITES[name];
+    c.save();
+    c.beginPath();
+    c.rect(Math.round(x), Math.round(y), w, h);
+    c.clip();
+    const sx = Math.floor(x / a.w) * a.w,
+      sy = Math.floor(y / a.h) * a.h;
+    for (let yy = sy; yy < y + h; yy += a.h)
+      for (let xx = sx; xx < x + w; xx += a.w) this.sprite(name, xx, yy);
+    c.restore();
+  }
+  roofStrip(left, right, x, y, width) {
+    this.sprite(left, x, y);
+    this.sprite(right, x + width - 32, y);
+    // Extend the opaque inner edge between the sloped ends without rescaling art.
+    const layer = ENVIRONMENT_SPRITES[left].layers[0],
+      image = this.textures[layer.pack];
+    for (let xx = x + 32; xx < x + width - 32; xx += 2)
+      this.ctx.drawImage(
+        image,
+        layer.column * 17 + 15,
+        layer.row * 17,
+        1,
+        16,
+        xx,
+        y,
+        2,
+        32,
+      );
   }
   text(text, x, y, color = "#e6e6c6", size = 10) {
     const c = this.ctx;
@@ -71,23 +100,57 @@ export class Renderer {
     c.fillText(text, Math.round(x), Math.round(y));
   }
   tree(x, y, type = "oak") {
-    this.sprite(type, x - 24, y - 48);
+    this.sprite(type, x - 16, y - 48);
   }
   building(b) {
-    const types = {
-      smith: 3,
-      inn: 0,
-      shop: 4,
-      cabin: 2,
-      house: 0,
-      house2: 1,
-      house3: 2,
-      house4: 4,
-      house5: 5,
-      house6: 6,
-    };
-    this.sprite(`house${types[b.id]}`, b.x + b.w / 2 - 56, b.y + b.h - 105);
-    this.text(b.name, b.x + b.w / 2, b.y + b.h + 13, "#f0dfab", 9);
+    const c = this.ctx,
+      ground = b.y + b.h,
+      width = Math.ceil(b.w / 2) * 2,
+      x = Math.round(b.x),
+      theme = {
+        smith: ["Stone", "Brown"],
+        inn: ["Plaster", "Brown"],
+        shop: ["Timber", "Green"],
+        cabin: ["Timber", "Brown"],
+        house: ["Plaster", "Brown"],
+        house2: ["Plaster", "Green"],
+        house3: ["Timber", "Brown"],
+        house4: ["Stone", "Green"],
+        house5: ["Plaster", "Pale"],
+        house6: ["Timber", "Green"],
+      }[b.id];
+    this.texture("wall" + theme[0], x, ground - 64, width, 64);
+    this.texture("stoneFloor", x, ground - 8, width, 8);
+    this.sprite("door", Math.round(b.x + b.w / 2 - 16), ground - 32);
+    if (width >= 96) {
+      this.sprite(
+        theme[0] === "Stone" ? "windowPale" : "windowBrown",
+        x + 4,
+        ground - 64,
+      );
+      this.sprite("windowBrown", x + width - 36, ground - 64);
+    } else
+      this.sprite("windowBrown", Math.round(x + width / 2 - 16), ground - 64);
+    const roofX = x - 8,
+      roofW = width + 16;
+    this.roofStrip(
+      "roof" + theme[1] + "Left",
+      "roof" + theme[1] + "Right",
+      roofX,
+      ground - 128,
+      roofW,
+    );
+    this.roofStrip(
+      "eave" + theme[1] + "Left",
+      "eave" + theme[1] + "Right",
+      roofX,
+      ground - 96,
+      roofW,
+    );
+    if (b.id === "smith" || b.id === "inn")
+      this.sprite("chimney", x + 8, ground - 144);
+    if (b.id === "smith") this.sprite("anvil", x + width - 18, ground + 3);
+    this.text(b.name, b.x + b.w / 2, ground + 13, PALETTE.cream, 9);
   }
   person(n, time) {
     const frame = Math.floor(time * 1.5 + n.x) % 3;
@@ -166,48 +229,66 @@ export class Renderer {
     const s = game.state,
       t = game.time,
       c = this.ctx;
-    const sx = Math.max(0, Math.floor(this.camera / 16) * 16),
-      ex = Math.min(WORLD.width, this.camera + 656),
-      sy = Math.max(0, Math.floor(this.cameraY / 16) * 16),
-      ey = Math.min(WORLD.height, this.cameraY + 400);
-    for (let y = sy; y < ey; y += 16)
-      for (let x = sx; x < ex; x += 16) {
-        const i = (x / 16 + (y / 16) * 3) % 4,
-          water = x >= STREAM.x && x < STREAM.x + STREAM.w;
-        let tile = (x >= 1280 ? "forest" : "grass") + i;
-        if (this.path(x, y)) tile = "path" + (i % 3);
-        if (water)
-          tile =
-            y >= STREAM.bridgeY && y < STREAM.bridgeY + STREAM.bridgeH
-              ? "bridge"
-              : "water" + (Math.floor(t * 3) % 4);
-        this.tile(tile, x, y);
-        if (
-          !water &&
-          !this.path(x, y) &&
-          ((x / 16) * 11 + (y / 16) * 7) % 53 === 0 &&
-          y > 50
-        )
-          this.sprite("flowers", x, y);
+    const sx = Math.max(0, Math.floor(this.camera / 32) * 32),
+      ex = Math.min(WORLD.width, this.camera + 672),
+      sy = Math.max(0, Math.floor(this.cameraY / 32) * 32),
+      ey = Math.min(WORLD.height, this.cameraY + 416);
+    for (let y = sy; y < ey; y += 32)
+      for (let x = sx; x < ex; x += 32) {
+        const index = (x / 32 + (y / 32) * 3) % 4;
+        this.tile((x >= 1280 ? "forest" : "grass") + index, x, y);
       }
-    // Pixel banks and bridge handrails match the collision corridor exactly.
-    for (let y = sy; y < ey; y += 16) {
-      if (y >= 192 && y < 256) continue;
-      this.sprite("bank", STREAM.x - 16, y);
-      this.sprite("bank", STREAM.x + STREAM.w, y, 16, 16, true);
+    this.rect(1280, 0, WORLD.width - 1280, WORLD.height, "#203a302b");
+    this.texture("path0", 28, 192, WORLD.width - 56, 64);
+    this.texture("path0", 240, 48, 48, 560);
+    this.texture("path0", 28, 464, 596, 48);
+    this.texture("path0", 1760, 48, 48, 192);
+    this.texture("path0", 1408, 128, 32, 96);
+    // Each bank stays on its original side of the unchanged collision channel.
+    c.save();
+    c.beginPath();
+    c.rect(STREAM.x, 0, STREAM.w, WORLD.height);
+    c.clip();
+    this.texture(
+      "water" + (Math.floor(t * 2) % 2),
+      STREAM.x,
+      0,
+      STREAM.w,
+      WORLD.height,
+    );
+    c.restore();
+    for (let y = 0; y < WORLD.height; y += 32) {
+      if (y >= STREAM.bridgeY && y < STREAM.bridgeY + STREAM.bridgeH) continue;
+      this.sprite("bank", STREAM.x - 18, y, true);
+      this.sprite("bank", STREAM.x + STREAM.w - 14, y);
     }
+    this.texture(
+      "bridge",
+      STREAM.x - 16,
+      STREAM.bridgeY,
+      STREAM.w + 32,
+      STREAM.bridgeH,
+    );
     for (let x = STREAM.x - 16; x < STREAM.x + STREAM.w + 16; x += 32) {
       this.sprite("fence", x, 180);
       this.sprite("fence", x, 245);
     }
-    this.sprite("well", 211, 88);
+    for (let y = sy; y < ey; y += 32)
+      for (let x = sx; x < ex; x += 32)
+        if (
+          !this.path(x, y) &&
+          (x < STREAM.x - 32 || x > STREAM.x + STREAM.w + 32) &&
+          ((x / 32) * 11 + (y / 32) * 7) % 37 === 0 &&
+          y > 54
+        )
+          this.sprite("flowers", x, y);
+    this.sprite("well", 203, 72);
     this.sprite("table", 309, 164);
     this.sprite("barrel", 355, 171);
-    // Small gardens, carved fences and animated lanterns.
     for (const y of [367, 577])
       for (let x = 48; x < 200; x += 32) this.sprite("fence", x, y);
-    for (const x of [64, 96, 128, 160])
-      for (const y of [403, 419, 548, 564]) this.sprite("flowers", x, y);
+    for (const x of [64, 112, 160])
+      for (const y of [403, 548]) this.sprite("flowers", x, y);
     for (const [x, y] of [
       [207, 165],
       [472, 169],
@@ -215,13 +296,10 @@ export class Renderer {
       [597, 208],
       [1410, 155],
     ]) {
-      this.sprite("lamp", x, y - 30);
-      c.globalAlpha = 0.1 + Math.sin(t * 4 + x) * 0.03;
-      this.rect(x + 3, y - 25, 10, 8, PALETTE.cream);
-      c.globalAlpha = 1;
+      this.sprite("lamp", x - 8, y - 24);
     }
     HERBS.filter((h) => !s.collected.includes(h.id)).forEach((h) =>
-      this.sprite("herb", h.x - 8, h.y - 15),
+      this.sprite("herb", h.x - 16, h.y - 17),
     );
     const layers = [];
     for (let x = 24; x < WORLD.width; x += 38) {
@@ -241,8 +319,8 @@ export class Renderer {
         draw: () =>
           this.sprite(
             d.type,
-            d.x - ATLAS[d.type].w / 2,
-            d.y - ATLAS[d.type].h + 15,
+            d.x - ENVIRONMENT_SPRITES[d.type].w / 2,
+            d.y - ENVIRONMENT_SPRITES[d.type].h + 15,
           ),
       });
     BUILDINGS.forEach((b) =>
@@ -278,43 +356,43 @@ export class Renderer {
       c = this.ctx,
       cellar = s.scene === "cellar";
     this.rect(0, 0, 640, 384, PALETTE.ink);
-    for (let y = 48; y < 352; y += 16)
-      for (let x = 96; x < 544; x += 16)
-        this.tile(
-          y < 80 || x < 112 || x >= 528 || y >= 336
-            ? "stoneFloor"
-            : cellar
-              ? "stoneFloor"
-              : "floor",
-          x,
-          y,
-        );
-    // The doorway is the one gap in the southern wall.
-    this.tile("floor", 304, 336);
-    this.tile("floor", 320, 336);
+    this.texture(
+      cellar ? "stoneFloor" : s.scene === "cabin" ? "cabinFloor" : "floor",
+      112,
+      80,
+      416,
+      256,
+    );
+    this.texture("wallStone", 96, 48, 448, 32);
+    this.texture("wallStone", 96, 80, 16, 256);
+    this.texture("wallStone", 528, 80, 16, 256);
+    this.texture("wallStone", 96, 336, 204, 16);
+    this.texture("wallStone", 340, 336, 204, 16);
+    this.texture(cellar ? "stoneFloor" : "cabinFloor", 300, 336, 40, 16);
     if (s.scene === "cabin") {
       this.sprite("table", 160, 141);
+      this.sprite("book", 196, 135);
       this.text("Napló", 211, 130, PALETTE.cream, 9);
       this.sprite("bed", 129, 235);
       if (s.flags.cupboard) this.sprite("stairs", 417, 93);
-      this.sprite("wardrobe", s.flags.cupboard ? 477 : 414, 72);
+      this.sprite("wardrobe", s.flags.cupboard ? 477 : 414, 74);
     } else if (cellar) {
       OBJECTS.cellar
         .filter((o) => o.id.startsWith("rune"))
-        .forEach((o, i) => {
-          this.sprite("rock", o.x - 20, o.y - 19);
+        .forEach((o, index) => {
+          this.sprite("rock", o.x - 16, o.y - 17);
           this.text(
-            ["NY", "D", "K"][i],
+            ["NY", "D", "K"][index],
             o.x,
             o.y + 1,
-            s.runes[i] ? PALETTE.cream : PALETTE.ink,
+            s.runes[index] ? PALETTE.cream : PALETTE.ink,
             11,
           );
-          if (s.runes[i]) this.rect(o.x - 6, o.y - 10, 12, 2, PALETTE.light);
         });
       if (!s.flags.amulet) this.sprite("chest", 304, 74);
       this.sprite("stairs", 304, 304);
-      this.sprite("table", 111, 227, 48, 30);
+      this.sprite("lectern", 120, 227);
+      this.sprite("book", 120, 223);
       this.text("Felirat", 136, 274, PALETTE.cream, 9);
     } else if (s.scene === "smithy") {
       this.sprite("anvil", 209, 143);
@@ -328,27 +406,24 @@ export class Renderer {
       this.sprite("table", 380, 127);
       this.sprite("table", 215, 227);
       this.sprite("barrel", 471, 112);
+      this.sprite("rug", 300, 236);
     } else if (s.scene === "shop") {
       this.sprite("table", 288, 128);
       this.sprite("chest", 135, 100);
       this.sprite("barrel", 177, 92);
       this.sprite("barrel", 445, 92);
-      this.sprite("wardrobe", 465, 72);
+      this.sprite("wardrobe", 469, 72);
     } else {
       this.sprite("bed", 130, 100);
       this.sprite("table", 343, 136);
-      this.sprite("wardrobe", 466, 75);
+      this.sprite("wardrobe", 470, 75);
       this.sprite("barrel", 139, 241);
     }
     for (const [x, y] of [
       [122, 100],
       [512, 100],
-    ]) {
-      this.sprite("lamp", x - 8, y - 28);
-      c.globalAlpha = 0.12 + Math.sin(game.time * 5 + x) * 0.04;
-      this.rect(x - 5, y - 24, 10, 12, PALETTE.cream);
-      c.globalAlpha = 1;
-    }
+    ])
+      this.sprite("indoorLamp", x - 16, y - 24);
     const people = NPCS.filter((n) => n.scene === s.scene);
     people.sort((a, b) => a.y - b.y).forEach((n) => this.person(n, game.time));
     this.player(game);

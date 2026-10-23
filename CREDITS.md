@@ -1,7 +1,11 @@
 # Grafika és hang
 
-A lovag, a falusi szereplők és az ellenfelek a felhasználó által feltöltött **Kenney Roguelike Characters 2.0** csomagból származnak, **CC0-licenccel**. A csomag eredeti licencfájlját és módosítatlan PNG-jét az `assets/kenney/characters/` tartalmazza.
+A játék a felhasználó három feltöltött **Kenney CC0** csomagját használja:
 
-A pontos sprite-koordináták, alkotó, licenc, fájlazonosítók és a még hiányzó két csomag állapota az [ASSET_CREDITS.md](ASSET_CREDITS.md) fájlban olvasható. A tájak és belső terek egyelőre a korábbi saját pixelatlaszt használják, amíg a Kenney RPG Pack és Indoors archívumok is rendelkezésre állnak.
+- **Roguelike pack:** Kenney Vleugels, Lynn Evers közreműködésével; tájak, növényzet, épületek, víz, kültéri tárgyak.
+- **Roguelike Characters 2.0:** Kenney; lovag, NPC-k, ellenfelek, felszerelés.
+- **Roguelike Indoor pack:** Kenney Vleugels; padlók, bútorok, napló, szekrény, láda, szőnyeg és pincelétra.
 
-A zene és hanghatások változatlanul saját Web Audio szintézissel készülnek.
+Mindhárom eredeti CC0-licenc, változatlan PNG és csempeleírás az `assets/kenney/` megfelelő alkönyvtárában található. A pontos források, képkivágások és SHA-256 azonosítók: [ASSET_CREDITS.md](ASSET_CREDITS.md).
+
+A zene és hanghatások saját Web Audio szintézissel készülnek. A régi saját atlaszt a játék már nem tölti be; történeti forrásként megmaradt.

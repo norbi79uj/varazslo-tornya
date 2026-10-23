@@ -328,26 +328,28 @@ try {
   );
 
   await scenario(
-    "local PNG atlas and rendered pixel detail load without external assets",
+    "all Kenney environment sprites and actors render from local PNG sheets",
     async () => {
-      const result = await page.evaluate(async () => {
-        const r = await fetch("/assets/smaragd-atlas.png");
-        const { ATLAS } = await import("/assets/atlas.js");
-        const c = document.querySelector("#game"),
-          pixels = c.getContext("2d").getImageData(0, 0, 640, 384).data,
-          set = new Set();
-        for (let i = 0; i < pixels.length; i += 4)
-          set.add(`${pixels[i]},${pixels[i + 1]},${pixels[i + 2]}`);
-        return {
-          ok: r.ok,
-          type: r.headers.get("content-type"),
-          count: Object.keys(ATLAS).length,
-          colors: set.size,
-        };
-      });
-      assert.equal(result.ok, true);
-      assert.ok(result.type.includes("image/png"));
-      assert.equal(result.count, 74);
+      const result = await page.evaluate(async () =>
+        (
+          await import("/tests/environment-probe.js")
+        ).probeEnvironmentGraphics(),
+      );
+      assert.deepEqual(result.sheets, [
+        { pack: "rpg", ok: true, type: "image/png", width: 968, height: 526 },
+        {
+          pack: "indoors",
+          ok: true,
+          type: "image/png",
+          width: 458,
+          height: 305,
+        },
+      ]);
+      assert.ok(result.sprites.length > 50);
+      for (const sprite of result.sprites) {
+        assert.ok(sprite.visible > 30, sprite.name);
+        assert.equal(sprite.nativePixels, true, sprite.name);
+      }
       assert.ok(result.colors > 20);
       const roles = await page.evaluate(async () => {
         const { CHARACTER_SHEET, CHARACTER_PROFILES, drawKenneyActor } =
