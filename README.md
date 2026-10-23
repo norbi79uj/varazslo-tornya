@@ -121,4 +121,4 @@ Kimenet: `artifacts/previews/` (Git által figyelmen kívül hagyva). Ez csak fe
 - `game.js`: HUD, billentyűzet, érintés és játékhurok.
 - `tests/`, `tools/`: logikai/böngészős tesztek, eredeti grafikai forrás és képernyőkép-segédlet.
 
-Ez a fejlesztés a **`feat/snes-falu-kornyek`** ágon készült. Megőrzi a korábbi Smaragdvölgy működő rendszereit és történetét. A `main`, `feat/browser-knight-game` és GitHubon megőrzött `feat/smaragdvolgy` változatlan. A nyilvános feltöltés külön felhasználói jóváhagyásra vár.
+Ez a fejlesztés a **`feat/snes-falu-kornyek`** ágon készült. Megőrzi a korábbi Smaragdvölgy működő rendszereit és történetét. A `main`, `feat/browser-knight-game` és GitHubon megőrzött `feat/smaragdvolgy` változatlan. A felhasználó jóváhagyása után az ág GitHubra került; a távoli commitot és a játékfájlokat visszaellenőriztük.

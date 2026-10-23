@@ -77,4 +77,4 @@ Ellenőriztük a működő AudioContextet és a külön falusi, erdei és főell
 
 ## GitHub
 
-A fejlesztés mérföldkövei helyi Git-commitokban vannak a `feat/snes-falu-kornyek` ágon. A `main`, `feat/browser-knight-game` és a korábbi `feat/smaragdvolgy` ág megmaradt. **Az új ág feltöltése a kifejezetten kért, nyilvános feltöltés előtti jóváhagyásra vár**, ezért ennek távoli megjelenését még nem állítjuk ellenőrzöttnek.
+A felhasználó jóváhagyása után a `feat/snes-falu-kornyek` ágat feltöltöttük GitHubra. A visszaolvasott távoli ág a jóváhagyott `1ac7a98d2970893c3cf0b8154dd3d2cd3ff6fdc0` játékverzióra mutatott. A távoli commit fájlfájában ellenőriztük az `index.html`, a JavaScript-modulok, az atlasz PNG és koordinátajegyzéke, az `ASSET_CREDITS.md`, a README és e tesztjelentés jelenlétét. A `main`, `feat/browser-knight-game` és `feat/smaragdvolgy` ágak változatlanok. Ez a dokumentációs frissítés a sikeres feltöltés tényét rögzíti; a tesztelt játékkód nem változott.
