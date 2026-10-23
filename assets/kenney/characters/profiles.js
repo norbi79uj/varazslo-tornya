@@ -1,3 +1,4 @@
+import { drawDetail } from "../../village/draw.js";
 // Kenney Roguelike Characters 2.0, CC0. Coordinates are zero-based (column, row).
 // 16x16 tiles, one transparent separator pixel. Original PNG is unmodified.
 export const CHARACTER_SHEET = {
@@ -39,12 +40,22 @@ export function drawKenneyActor(
   name,
   x,
   y,
-  { scale = 2, frame = 0, flip = false } = {},
+  {
+    scale = 2,
+    frame = 0,
+    flip = false,
+    direction = "down",
+    details = null,
+    pose = "idle",
+    hideEquipment = false,
+  } = {},
 ) {
   const profile = CHARACTER_PROFILES[name];
   if (!profile) throw Error(`Ismeretlen Kenney-karakter: ${name}`);
   if (![2, 3].includes(scale))
     throw Error("A karakterek egész, 2x vagy 3x léptéket használnak.");
+  if (direction === "left") flip = true;
+  else if (direction !== "down") flip = false;
   const stride = frame === 1 ? -1 : frame === 2 ? 1 : 0,
     bob = stride === 0 ? 0 : -1;
   ctx.save();
@@ -73,7 +84,7 @@ export function drawKenneyActor(
       8,
       3,
       dx,
-      dy + (13 + stride) * scale,
+      dy + (13 + stride - (pose === "sit" ? 2 : 0)) * scale,
       8 * scale,
       3 * scale,
     );
@@ -84,12 +95,21 @@ export function drawKenneyActor(
       8,
       3,
       dx + 8 * scale,
-      dy + (13 - stride) * scale,
+      dy + (13 - stride - (pose === "sit" ? 2 : 0)) * scale,
       8 * scale,
       3 * scale,
     );
   }
-  for (const layer of profile.equipment || []) {
+  if (details && direction !== "down")
+    drawDetail(
+      ctx,
+      details,
+      name + "-" + (direction === "up" ? "up" : "right"),
+      0,
+      bob * scale,
+      { scale },
+    );
+  for (const layer of hideEquipment ? [] : profile.equipment || []) {
     const { x: sx, y: sy } = sourceRect(layer);
     ctx.drawImage(
       image,

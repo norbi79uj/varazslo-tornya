@@ -220,6 +220,11 @@ function frame(now) {
     game.update(dt);
     renderer.draw(game);
     audio.tick(game.zone, !game.started || game.dead, game.bossNearby);
+    audio.ambience(
+      game.state.scene,
+      game.state.player,
+      !game.started || game.dead || !!game.dialog,
+    );
     sync();
   }
   requestAnimationFrame(frame);

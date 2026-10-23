@@ -1,3 +1,4 @@
+import { INTERIOR_PROPS } from "./village-layout.js";
 // All world coordinates, encounters and rewards live here for easy expansion.
 export const WORLD = { width: 1920, height: 640 };
 export const LEVEL_XP = [0, 20, 55, 110, 190];
@@ -243,7 +244,10 @@ for (const [i, b] of BUILDINGS.filter((b) => b.id !== "cabin").entries()) {
   });
   OBJECTS[scene] = [{ id: "interiorExit", name: "Kijárat", x: 320, y: 325 }];
 }
-export function interiorSolids(scene, flags = {}) {
+export function interiorSolids(scene, flags = {}, details = true) {
+  const additions = details
+    ? INTERIOR_PROPS.filter((p) => p.scene === scene).map((p) => p.foot)
+    : [];
   const table = { x: 160, y: 141, w: 64, h: 27 },
     bed = { x: 129, y: 235, w: 64, h: 33 };
   if (scene === "cabin")
@@ -258,12 +262,14 @@ export function interiorSolids(scene, flags = {}) {
     ];
   if (scene === "smithy")
     return [
+      ...additions,
       { x: 209, y: 143, w: 40, h: 23 },
       { x: 370, y: 122, w: 64, h: 24 },
       { x: 135, y: 105, w: 53, h: 26 },
     ];
   if (scene === "inn")
     return [
+      ...additions,
       { x: 130, y: 95, w: 64, h: 35 },
       { x: 130, y: 146, w: 64, h: 35 },
       { x: 380, y: 127, w: 64, h: 26 },

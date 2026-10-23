@@ -4,6 +4,8 @@ import puppeteer from "puppeteer-core";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { BUILDINGS, OBJECTS } from "../world.js";
+import { recordMerchant } from "./village-probe.js";
+import { preparePagesFixture } from "./pages-fixture.js";
 import { SAVE_KEY } from "../engine.js";
 await mkdir("test-results", { recursive: true });
 const browser = await puppeteer.launch({
@@ -511,10 +513,76 @@ try {
       );
     },
   );
+  await scenario(
+    "original village details, all directional poses, moving merchant and dialogue pause",
+    async () => {
+      const result = await page.evaluate(async () =>
+        (await import("/tests/village-probe.js")).probeVillageGraphics(),
+      );
+      assert.deepEqual([result.width, result.height], [256, 384]);
+      assert.equal(result.sprites.length, 71);
+      for (const sprite of result.sprites) {
+        assert.ok(sprite.visible > 8, sprite.name);
+        assert.equal(sprite.nativePixels, true, sprite.name);
+      }
+      for (const role of result.roles)
+        assert.equal(role.directions, 4, role.name);
+      await checkpoint({ scene: "world", player: { x: 264, y: 300 } });
+      await page.evaluate(recordMerchant);
+      await new Promise((r) => setTimeout(r, 2000));
+      const positions = await page.evaluate(() =>
+        window.__merchant.map((p) => p.x),
+      );
+      assert.ok(Math.max(...positions) - Math.min(...positions) >= 4);
+      await checkpoint({ player: { x: 338, y: 251 } });
+      await interact("Réka");
+      await page.evaluate(() => {
+        window.__merchant = [];
+      });
+      await new Promise((r) => setTimeout(r, 450));
+      assert.equal(
+        await page.evaluate(
+          () => new Set(window.__merchant.map((p) => p.x + "," + p.y)).size,
+        ),
+        1,
+      );
+      await close();
+      await page.screenshot({
+        path: "test-results/village-detail-firefox.png",
+        fullPage: true,
+      });
+    },
+  );
+  await scenario(
+    "GitHub Pages subdirectory serves local graphics and playable movement",
+    async () => {
+      const prefix = await preparePagesFixture();
+      await page.goto("http://127.0.0.1:8000" + prefix);
+      await click("#start");
+      await page.keyboard.down("d");
+      await new Promise((r) => setTimeout(r, 250));
+      await page.keyboard.up("d");
+      await click("#save");
+      assert.ok(
+        await page.evaluate(
+          (key) => JSON.parse(localStorage.getItem(key)).player.x > 270,
+          SAVE_KEY,
+        ),
+      );
+      const images = await page.evaluate(() =>
+        performance
+          .getEntriesByType("resource")
+          .filter((r) => new URL(r.name).pathname.endsWith(".png"))
+          .map((r) => new URL(r.name).pathname),
+      );
+      assert.equal(images.length, 4);
+      for (const image of images) assert.ok(image.startsWith(prefix));
+    },
+  );
   assert.deepEqual(errors, []);
   assert.deepEqual(external, []);
   console.log(
-    `${passed}/8 scenarios passed on ${await browser.version()}; no JavaScript errors or external asset requests.`,
+    `${passed}/10 scenarios passed on ${await browser.version()}; no JavaScript errors or external asset requests.`,
   );
 } finally {
   await browser.close();

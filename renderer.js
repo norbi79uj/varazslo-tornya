@@ -1,12 +1,4 @@
-import {
-  WORLD,
-  BUILDINGS,
-  NPCS,
-  HERBS,
-  OBJECTS,
-  DECOR,
-  STREAM,
-} from "./world.js";
+import { WORLD, BUILDINGS, HERBS, OBJECTS, DECOR, STREAM } from "./world.js";
 import {
   ENVIRONMENT_SHEETS,
   ENVIRONMENT_SPRITES,
@@ -17,6 +9,14 @@ import {
   CHARACTER_SHEET,
   drawKenneyActor,
 } from "./assets/kenney/characters/profiles.js";
+import { DETAIL_SHEET, drawDetail } from "./assets/village/draw.js";
+import {
+  createGround,
+  drawDetailedBuilding,
+  addVillageProps,
+  drawInteriorDetails,
+} from "./village-view.js";
+import { facing } from "./village-life.js";
 export class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -48,7 +48,15 @@ export class Renderer {
     );
     const characters = load(CHARACTER_SHEET.url);
     this.characters = characters.image;
-    this.ready = Promise.all([...pending, characters.ready]);
+    const details = load(DETAIL_SHEET.url);
+    this.details = details.image;
+    this.ready = Promise.all([
+      ...pending,
+      characters.ready,
+      details.ready,
+    ]).then(() => {
+      this.ground = createGround(this);
+    });
   }
   rect(x, y, w, h, color) {
     this.ctx.fillStyle = color;
@@ -71,25 +79,6 @@ export class Renderer {
       for (let xx = sx; xx < x + w; xx += a.w) this.sprite(name, xx, yy);
     c.restore();
   }
-  roofStrip(left, right, x, y, width) {
-    this.sprite(left, x, y);
-    this.sprite(right, x + width - 32, y);
-    // Extend the opaque inner edge between the sloped ends without rescaling art.
-    const layer = ENVIRONMENT_SPRITES[left].layers[0],
-      image = this.textures[layer.pack];
-    for (let xx = x + 32; xx < x + width - 32; xx += 2)
-      this.ctx.drawImage(
-        image,
-        layer.column * 17 + 15,
-        layer.row * 17,
-        1,
-        16,
-        xx,
-        y,
-        2,
-        32,
-      );
-  }
   text(text, x, y, color = "#e6e6c6", size = 10) {
     const c = this.ctx;
     c.font = `${size}px monospace`;
@@ -99,65 +88,64 @@ export class Renderer {
     c.fillStyle = color;
     c.fillText(text, Math.round(x), Math.round(y));
   }
+  detail(name, x, y, options) {
+    drawDetail(this.ctx, this.details, name, x, y, options);
+  }
   tree(x, y, type = "oak") {
+    this.ctx.globalAlpha = 0.7;
+    this.detail("shadow", x - 32, y - 2);
+    this.ctx.globalAlpha = 1;
     this.sprite(type, x - 16, y - 48);
+    if (type !== "pine")
+      this.detail(
+        "leafCluster",
+        x - 20 + (Math.floor(this.environmentTime * 1.5 + x) % 5 === 0 ? 2 : 0),
+        y - 45,
+      );
   }
   building(b) {
-    const c = this.ctx,
-      ground = b.y + b.h,
-      width = Math.ceil(b.w / 2) * 2,
-      x = Math.round(b.x),
-      theme = {
-        smith: ["Stone", "Brown"],
-        inn: ["Plaster", "Brown"],
-        shop: ["Timber", "Green"],
-        cabin: ["Timber", "Brown"],
-        house: ["Plaster", "Brown"],
-        house2: ["Plaster", "Green"],
-        house3: ["Timber", "Brown"],
-        house4: ["Stone", "Green"],
-        house5: ["Plaster", "Pale"],
-        house6: ["Timber", "Green"],
-      }[b.id];
-    this.texture("wall" + theme[0], x, ground - 64, width, 64);
-    this.texture("stoneFloor", x, ground - 8, width, 8);
-    this.sprite("door", Math.round(b.x + b.w / 2 - 16), ground - 32);
-    if (width >= 96) {
-      this.sprite(
-        theme[0] === "Stone" ? "windowPale" : "windowBrown",
-        x + 4,
-        ground - 64,
-      );
-      this.sprite("windowBrown", x + width - 36, ground - 64);
-    } else
-      this.sprite("windowBrown", Math.round(x + width / 2 - 16), ground - 64);
-    const roofX = x - 8,
-      roofW = width + 16;
-    this.roofStrip(
-      "roof" + theme[1] + "Left",
-      "roof" + theme[1] + "Right",
-      roofX,
-      ground - 128,
-      roofW,
-    );
-    this.roofStrip(
-      "eave" + theme[1] + "Left",
-      "eave" + theme[1] + "Right",
-      roofX,
-      ground - 96,
-      roofW,
-    );
-    if (b.id === "smith" || b.id === "inn")
-      this.sprite("chimney", x + 8, ground - 144);
-    if (b.id === "smith") this.sprite("anvil", x + width - 18, ground + 3);
-    this.text(b.name, b.x + b.w / 2, ground + 13, PALETTE.cream, 9);
+    drawDetailedBuilding(this, b, this.environmentTime);
   }
-  person(n, time) {
-    const frame = Math.floor(time * 1.5 + n.x) % 3;
-    drawKenneyActor(this.ctx, this.characters, n.id, n.x - 16, n.y - 17, {
-      frame,
-    });
-    this.text(n.name.split(",")[0], n.x, n.y + 29, "#e4ddb7", 9);
+  person(n, game) {
+    const time = game.life.clock,
+      frame = n.walking ? [0, 1, 0, 2][Math.floor(time * 7) % 4] : 0;
+    this.ctx.globalAlpha = 0.45;
+    this.detail("shadow", n.x - 32, n.y - 3);
+    this.ctx.globalAlpha = 1;
+    drawKenneyActor(
+      this.ctx,
+      this.characters,
+      n.profile || n.id,
+      n.x - 16,
+      n.y - 17,
+      {
+        frame,
+        direction: n.direction,
+        details: this.details,
+        pose: n.pose,
+        hideEquipment: n.pose === "chop",
+      },
+    );
+    if (n.pose === "hammer" || n.pose === "chop") {
+      const down = Math.floor(time * 3) % 3 === 2,
+        tool = n.pose === "hammer" ? "hammer" : "axe";
+      this.detail(
+        tool + (down ? "Down" : "Up"),
+        n.x + 8,
+        n.y - (down ? 6 : 22),
+      );
+      if (down && n.pose === "chop")
+        for (let j = 0; j < 3; j++)
+          this.rect(n.x + 29 + j * 4, n.y + 7 - j * 3, 2, 2, "#d3b789");
+    }
+    if (n.id === "elder") this.detail("walkingStick", n.x + 10, n.y - 3);
+    if (n.chat && !n.walking && Math.floor(time / 4 + n.x) % 5 === 0)
+      this.text("…", n.x, n.y - 24, "#f0dfb5", 10);
+  }
+  peopleLabels(game) {
+    for (const n of game.people)
+      if (!n.chat || game.state.scene !== "world")
+        this.text(n.name.split(",")[0], n.x, n.y + 29, "#e4ddb7", 9);
   }
   player(game) {
     const p = game.state.player,
@@ -177,7 +165,8 @@ export class Renderer {
     if (game.invincible <= 0 || Math.floor(game.time * 13) % 2 === 0)
       drawKenneyActor(this.ctx, this.characters, "hero", p.x - 16, p.y - 17, {
         frame,
-        flip: p.dx < 0,
+        direction: facing(p.dx, p.dy),
+        details: this.details,
       });
     if (game.swing > 0) {
       const a = Math.atan2(p.dy, p.dx);
@@ -193,7 +182,7 @@ export class Renderer {
       c.stroke();
     }
   }
-  enemy(e, time) {
+  enemy(e, time, player) {
     const frame = Math.floor(time * 7) % 3,
       name = e.boss ? "boss" : e.id.startsWith("slime") ? "slime" : "wolf",
       size = e.boss ? 48 : 32,
@@ -206,7 +195,12 @@ export class Renderer {
       name,
       e.x - size / 2,
       e.y - size + 17,
-      { frame, scale: e.boss ? 3 : 2 },
+      {
+        frame,
+        scale: e.boss ? 3 : 2,
+        direction: player ? facing(player.x - e.x, player.y - e.y) : "down",
+        details: this.details,
+      },
     );
     c.restore();
     this.rect(e.x - 16, e.y - size + 9, 32, 3, PALETTE.ink);
@@ -229,21 +223,7 @@ export class Renderer {
     const s = game.state,
       t = game.time,
       c = this.ctx;
-    const sx = Math.max(0, Math.floor(this.camera / 32) * 32),
-      ex = Math.min(WORLD.width, this.camera + 672),
-      sy = Math.max(0, Math.floor(this.cameraY / 32) * 32),
-      ey = Math.min(WORLD.height, this.cameraY + 416);
-    for (let y = sy; y < ey; y += 32)
-      for (let x = sx; x < ex; x += 32) {
-        const index = (x / 32 + (y / 32) * 3) % 4;
-        this.tile((x >= 1280 ? "forest" : "grass") + index, x, y);
-      }
-    this.rect(1280, 0, WORLD.width - 1280, WORLD.height, "#203a302b");
-    this.texture("path0", 28, 192, WORLD.width - 56, 64);
-    this.texture("path0", 240, 48, 48, 560);
-    this.texture("path0", 28, 464, 596, 48);
-    this.texture("path0", 1760, 48, 48, 192);
-    this.texture("path0", 1408, 128, 32, 96);
+    c.drawImage(this.ground, 0, 0);
     // Each bank stays on its original side of the unchanged collision channel.
     c.save();
     c.beginPath();
@@ -273,35 +253,11 @@ export class Renderer {
       this.sprite("fence", x, 180);
       this.sprite("fence", x, 245);
     }
-    for (let y = sy; y < ey; y += 32)
-      for (let x = sx; x < ex; x += 32)
-        if (
-          !this.path(x, y) &&
-          (x < STREAM.x - 32 || x > STREAM.x + STREAM.w + 32) &&
-          ((x / 32) * 11 + (y / 32) * 7) % 37 === 0 &&
-          y > 54
-        )
-          this.sprite("flowers", x, y);
-    this.sprite("well", 203, 72);
-    this.sprite("table", 309, 164);
-    this.sprite("barrel", 355, 171);
-    for (const y of [367, 577])
-      for (let x = 48; x < 200; x += 32) this.sprite("fence", x, y);
-    for (const x of [64, 112, 160])
-      for (const y of [403, 548]) this.sprite("flowers", x, y);
-    for (const [x, y] of [
-      [207, 165],
-      [472, 169],
-      [258, 396],
-      [597, 208],
-      [1410, 155],
-    ]) {
-      this.sprite("lamp", x - 8, y - 24);
-    }
     HERBS.filter((h) => !s.collected.includes(h.id)).forEach((h) =>
       this.sprite("herb", h.x - 16, h.y - 17),
     );
     const layers = [];
+    addVillageProps(this, game, layers);
     for (let x = 24; x < WORLD.width; x += 38) {
       if (x < 1735 || x > 1825)
         layers.push({
@@ -316,26 +272,35 @@ export class Renderer {
     for (const d of DECOR)
       layers.push({
         y: d.y,
-        draw: () =>
-          this.sprite(
-            d.type,
-            d.x - ENVIRONMENT_SPRITES[d.type].w / 2,
-            d.y - ENVIRONMENT_SPRITES[d.type].h + 15,
-          ),
+        draw: () => {
+          if (["oak", "pine", "goldTree"].includes(d.type))
+            this.tree(d.x, d.y + 1, d.type);
+          else {
+            this.ctx.globalAlpha = 0.45;
+            this.detail("shadow", d.x - 32, d.y - 8);
+            this.ctx.globalAlpha = 1;
+            this.sprite(
+              d.type,
+              d.x - ENVIRONMENT_SPRITES[d.type].w / 2,
+              d.y - ENVIRONMENT_SPRITES[d.type].h + 15,
+            );
+          }
+        },
       });
     BUILDINGS.forEach((b) =>
       layers.push({ y: b.y + b.h, draw: () => this.building(b) }),
     );
-    NPCS.filter(
-      (n) =>
-        (n.scene || "world") === "world" &&
-        (n.id !== "missing" || !s.flags.rescued),
-    ).forEach((n) => layers.push({ y: n.y, draw: () => this.person(n, t) }));
+    game.people.forEach((n) =>
+      layers.push({ y: n.y, draw: () => this.person(n, game) }),
+    );
     s.enemies
       .filter((e) => e.hp > 0)
-      .forEach((e) => layers.push({ y: e.y, draw: () => this.enemy(e, t) }));
+      .forEach((e) =>
+        layers.push({ y: e.y, draw: () => this.enemy(e, t, s.player) }),
+      );
     layers.push({ y: s.player.y, draw: () => this.player(game) });
     layers.sort((a, b) => a.y - b.y).forEach((a) => a.draw());
+    this.peopleLabels(game);
     // The open gate leads only to the end-of-chapter threshold, never a fake new map.
     for (const x of [1736, 1811])
       for (let y = 28; y < 76; y += 16) this.tile("stoneFloor", x, y);
@@ -348,7 +313,7 @@ export class Renderer {
       PALETTE.cream,
       8,
     );
-    this.sprite("fence", 596, 172);
+
     this.text("ERDŐ →", 613, 180, PALETTE.cream, 8);
   }
   interior(game) {
@@ -424,13 +389,19 @@ export class Renderer {
       [512, 100],
     ])
       this.sprite("indoorLamp", x - 16, y - 24);
-    const people = NPCS.filter((n) => n.scene === s.scene);
-    people.sort((a, b) => a.y - b.y).forEach((n) => this.person(n, game.time));
-    this.player(game);
+    drawInteriorDetails(this, game);
+    const actors = game.people.map((n) => ({
+      y: n.y,
+      draw: () => this.person(n, game),
+    }));
+    actors.push({ y: s.player.y, draw: () => this.player(game) });
+    actors.sort((a, b) => a.y - b.y).forEach((a) => a.draw());
+    this.peopleLabels(game);
     this.text(game.zone, 320, 27, PALETTE.cream, 11);
     this.text("E · Kijárat", 320, 365, PALETTE.cream, 10);
   }
   draw(game) {
+    this.environmentTime = game.time;
     const c = this.ctx,
       s = game.state;
     this.camera =

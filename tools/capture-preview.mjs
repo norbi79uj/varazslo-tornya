@@ -14,6 +14,8 @@ try {
   });
   for (const [name, scene, x, y] of [
     ["village", "world", 264, 210],
+    ["market", "world", 338, 251],
+    ["inn", "inn", 320, 280],
     ["south", "world", 264, 520],
     ["bridge", "world", 984, 220],
     ["forest", "world", 1660, 260],
@@ -29,6 +31,7 @@ try {
     Object.assign(s.player, { x, y });
     if (scene === "cellar")
       Object.assign(s.flags, { journal: true, examined: true, cupboard: true });
+    if (scene === "inn") s.returnSpot = { x: 429, y: 160 };
     if (scene === "smithy") s.returnSpot = { x: 125.5, y: 160 };
     await page.evaluate(
       ({ key, s }) => localStorage.setItem(key, JSON.stringify(s)),
@@ -44,4 +47,4 @@ try {
 } finally {
   await browser.close();
 }
-console.log("Captured eight actual game views under artifacts/previews/.");
+console.log("Captured ten actual game views under artifacts/previews/.");

@@ -34,6 +34,13 @@ const i = (c, y, dx = 0, dy = 0) => t("indoors", c, y, dx, dy);
 const sprite = (w, h, ...layers) => ({ w, h, layers });
 const crop = (layer, sx, sw) => ({ ...layer, sx, sw });
 export const ENVIRONMENT_SPRITES = {
+  cobble: sprite(32, 32, r(7, 16)),
+  forge0: sprite(32, 32, r(54, 8)),
+  forge1: sprite(32, 32, r(54, 10)),
+  counter: sprite(64, 32, i(0, 12), i(1, 12, 32)),
+  shelf: sprite(64, 32, i(5, 15), i(6, 15, 32)),
+  chair: sprite(32, 32, i(0, 6)),
+  fireplace: sprite(32, 32, r(54, 10)),
   grass0: sprite(32, 32, r(5, 0)),
   grass1: sprite(32, 32, r(5, 0)),
   grass2: sprite(32, 32, r(5, 0)),
@@ -113,7 +120,7 @@ export const ENVIRONMENT_SPRITES = {
   table: sprite(64, 32, i(4, 4), i(6, 4, 32)),
   lectern: sprite(32, 32, i(0, 4)),
   book: sprite(32, 32, i(18, 0)),
-  bed: sprite(64, 32, i(13, 1), i(12, 1, 32)),
+  bed: sprite(64, 32, i(9, 2), i(8, 2, 32)),
   stairs: sprite(32, 32, i(21, 10)),
   bank: sprite(32, 32, r(4, 1)),
   rug: sprite(

@@ -116,3 +116,28 @@ test("every environment composition stays inside its source and declared footpri
     }
   }
 });
+
+import { DETAIL_SPRITES } from "../assets/village/atlas.js";
+import { DETAIL_SHEET } from "../assets/village/sheet.js";
+test("original supplementary art is local, CC0, and all sprite regions fit the PNG", () => {
+  const png = readFileSync(new URL(DETAIL_SHEET.url)),
+    license = readFileSync(
+      new URL("../assets/village/License.txt", import.meta.url),
+      "utf8",
+    );
+  assert.equal(png.readUInt32BE(16), DETAIL_SHEET.width);
+  assert.equal(png.readUInt32BE(20), DETAIL_SHEET.height);
+  assert.match(license, /CC0 1.0 Universal/);
+  assert.equal(Object.keys(DETAIL_SPRITES).length, 71);
+  for (const [name, s] of Object.entries(DETAIL_SPRITES)) {
+    assert.ok(
+      s.x >= 0 &&
+        s.y >= 0 &&
+        s.w > 0 &&
+        s.h > 0 &&
+        s.x + s.w <= DETAIL_SHEET.width &&
+        s.y + s.h <= DETAIL_SHEET.height,
+      name,
+    );
+  }
+});

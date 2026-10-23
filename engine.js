@@ -1,7 +1,6 @@
 import {
   WORLD,
   BUILDINGS,
-  NPCS,
   OBJECTS,
   HERBS,
   ENCOUNTERS,
@@ -14,6 +13,8 @@ import {
   DECOR,
   interiorSolids,
 } from "./world.js";
+import { VillageLife } from "./village-life.js";
+import { VILLAGE_SOLIDS } from "./village-layout.js";
 export const SAVE_KEY = "varazslo-tornya.smaragdvolgy.v1";
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 export class Game {
@@ -26,9 +27,13 @@ export class Game {
     this.dialog = null;
     this.dead = false;
     this.time = 0;
+    this.life = new VillageLife();
     this.swing = 0;
     this.cooldown = 0;
     this.invincible = 0;
+  }
+  get people() {
+    return this.life.people(this.state);
   }
   get maxHp() {
     return (
@@ -75,6 +80,7 @@ export class Game {
     this.message("Új kaland kezdődik. A korábbi kézi mentésed megmaradt.");
   }
   clearTransient() {
+    this.life = new VillageLife();
     this.dialog = null;
     this.dead = false;
     this.swing = this.cooldown = this.invincible = 0;
@@ -164,6 +170,7 @@ export class Game {
   update(dt) {
     this.time += dt;
     if (!this.started || this.dialog || this.dead) return;
+    this.life.update(dt, this.state, (x, y) => this.blocked(x, y));
     this.swing = Math.max(0, this.swing - dt);
     this.cooldown = Math.max(0, this.cooldown - dt);
     this.invincible = Math.max(0, this.invincible - dt);
@@ -255,13 +262,7 @@ export class Game {
     const s = this.state,
       p = s.player;
     const objects = [...(OBJECTS[s.scene] || [])];
-    objects.push(
-      ...NPCS.filter(
-        (n) =>
-          (n.scene || "world") === s.scene &&
-          (n.id !== "missing" || !s.flags.rescued),
-      ),
-    );
+    objects.push(...this.people);
     if (s.scene === "world") {
       objects.push(
         ...HERBS.filter((h) => !s.collected.includes(h.id)).map((h) => ({
@@ -275,6 +276,7 @@ export class Game {
       .sort((a, b) => distance(p, a) - distance(p, b))[0];
   }
   changeScene(scene, x, y) {
+    this.sound("door");
     this.state.scene = scene;
     Object.assign(this.state.player, { x, y });
     this.close();
@@ -290,6 +292,8 @@ export class Game {
       return this.message(
         "Nincs itt semmi elérhető. Menj közelebb, majd nyomj E-t.",
       );
+    if (this.people.includes(o)) this.life.face(o, s.player);
+    if (o.chat) return this.open(o.name, o.chat);
     if (o.id.startsWith("door-")) {
       const b = BUILDINGS.find((b) => b.id === o.building);
       s.returnSpot = { x: b.x + b.w / 2, y: b.y + b.h + 18 };
@@ -312,7 +316,7 @@ export class Game {
       if (s.gold < cost)
         return this.open(
           "Kevés arany",
-          `Ehhez ${cost} arany kell. A réti lényekért és küldetésekért jutalom jár.`,
+          `${o.id === "smith" ? "Arany nélkül nincs új penge, barátom! A vas nem magától kerül a kohóba! " : ""}Ehhez ${cost} arany kell. A réti lényekért és küldetésekért jutalom jár.`,
         );
       s.gold -= cost;
       act();
@@ -349,7 +353,7 @@ export class Game {
           );
         return this.open(
           o.name,
-          "Az egyszerű vaskardod jó kezdet. Edzett pengém kétszer olyan erős. Bélelt mellényem egy életerővel növeli a védelmed. Mindkettő közönséges, falusi felszerelés.",
+          "No, mit hozott ide a szél, kalandor? A kardodnak bizony ráférne egy kis élezés! Az egyszerű vaskardod jó kezdet. Edzett pengém kétszer olyan erős. Bélelt mellényem egy életerővel növeli a védelmed. Mindkettő közönséges, falusi felszerelés.",
           choices,
         );
       }
@@ -391,14 +395,14 @@ export class Game {
           );
         return this.open(
           o.name,
-          "Szállj meg a Zöld Szarvasban! Öt aranyért meggyógyítalak. A réten gyógyfüvek nőnek; hozz hármat a sebesülteknek!",
+          `${s.player.hp < this.maxHp ? "Ejnye, már megint összeverekedtél az erdei bestiákkal? Gyere, ellátom a sebeidet!" : "Isten hozott, vándor! Ülj le egy kicsit! Nálunk még a leves is melegebb, mint a kovács tüze!"} Öt aranyért meggyógyítalak. A réten gyógyfüvek nőnek; hozz hármat a sebesülteknek!`,
           choices,
         );
       }
       case "merchant":
         return this.open(
           o.name,
-          "Friss gyógyital, egyszerű útravaló! Egy üveg négy életerőt tölt vissza. Q-val ihatsz belőle.",
+          "Friss gyógyitalok! Nem garantálom, hogy finomak, de legalább életben maradsz tőlük! Friss gyógyital, egyszerű útravaló! Egy üveg négy életerőt tölt vissza. Q-val ihatsz belőle.",
           [
             this.choice("Gyógyital · 8 arany", () =>
               buy(
@@ -412,7 +416,7 @@ export class Game {
       case "elder":
         return this.open(
           o.name,
-          "Smaragdvölgyet egykor a torony mágusa védte. Tövisúr most az erdő gyökereit uszítja ránk. Márton társa odaveszett az erdőben. Segíts neki! A régi kunyhó utolsó lakója naplót hagyott maga után.",
+          "Amikor még fiatal voltam, az északi erdőben madarak énekeltek. Mostanában még a farkasok is elkerülik azt a helyet… Smaragdvölgyet egykor a torony mágusa védte. Tövisúr most az erdő gyökereit uszítja ránk. Márton társa odaveszett az erdőben. Segíts neki! A régi kunyhó utolsó lakója naplót hagyott maga után.",
         );
       case "lumberjack":
         if (f.returned)
@@ -709,7 +713,24 @@ export function validateSave(s) {
     (s.scene === "cellar" && !s.flags.cupboard)
   )
     fail();
-  if (isBlocked(s, s.player.x, s.player.y)) fail();
+  if (isBlocked(s, s.player.x, s.player.y)) {
+    // A valid older save may be inside a newly placed village prop. Relocate only
+    // those positions; old walls/water and malformed saves remain rejected.
+    if (isBlocked(s, s.player.x, s.player.y, { villageDetails: false })) fail();
+    s = structuredClone(s);
+    let found = false;
+    for (let radius = 2; radius <= 64 && !found; radius += 2)
+      for (let dy = -radius; dy <= radius && !found; dy += 2)
+        for (let dx = -radius; dx <= radius && !found; dx += 2) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== radius) continue;
+          if (!isBlocked(s, s.player.x + dx, s.player.y + dy)) {
+            s.player.x += dx;
+            s.player.y += dy;
+            found = true;
+          }
+        }
+    if (!found) fail();
+  }
   if (s.returnSpot !== null) {
     if (
       !s.returnSpot ||
@@ -780,7 +801,7 @@ export function validateSave(s) {
   return base;
 }
 
-export function isBlocked(s, x, y) {
+export function isBlocked(s, x, y, { villageDetails = true } = {}) {
   const overlap = (o) =>
     x + 9 > o.x && x - 9 < o.x + o.w && y + 8 > o.y && y - 8 < o.y + o.h;
   if (s.scene !== "world")
@@ -789,7 +810,7 @@ export function isBlocked(s, x, y) {
       x > 527 ||
       y < 73 ||
       y > 327 ||
-      interiorSolids(s.scene, s.flags).some(overlap)
+      interiorSolids(s.scene, s.flags, villageDetails).some(overlap)
     );
   const gate = s.flags.boss && x > 1758 && x < 1800;
   if (
@@ -806,12 +827,15 @@ export function isBlocked(s, x, y) {
     (y - 8 < STREAM.bridgeY + 8 || y + 8 > STREAM.bridgeY + STREAM.bridgeH - 8)
   )
     return true;
-  return DECOR.filter((d) => d.solid).some((d) =>
-    overlap({
-      x: d.x - (d.w || 28) / 2,
-      y: d.y + (d.offsetY ?? -2),
-      w: d.w || 28,
-      h: d.h || 12,
-    }),
+  return (
+    (villageDetails && VILLAGE_SOLIDS.some(overlap)) ||
+    DECOR.filter((d) => d.solid).some((d) =>
+      overlap({
+        x: d.x - (d.w || 28) / 2,
+        y: d.y + (d.offsetY ?? -2),
+        w: d.w || 28,
+        h: d.h || 12,
+      }),
+    )
   );
 }

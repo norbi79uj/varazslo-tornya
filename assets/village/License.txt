@@ -1,0 +1,8 @@
+Smaragdvolgy village detail artwork, 2026.
+Original supplementary pixel artwork created for this project.
+Dedicated to the public domain under CC0 1.0 Universal:
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Applies to details.png, its sprite definitions and the original pixel artwork
+in tools/build-village-art.mjs. No Nintendo, Zelda or Secret of Mana artwork
+was copied. The separate Kenney graphics retain their own original CC0 notices.

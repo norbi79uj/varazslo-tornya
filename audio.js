@@ -8,6 +8,7 @@ export class RetroAudio {
     this.zone = "village";
     this.step = 0;
     this.next = 0;
+    this.nextAmbient = 0;
   }
   setVolume(value) {
     if (!Number.isFinite(value)) return;
@@ -84,6 +85,7 @@ export class RetroAudio {
       pickup: [659, 880],
       secret: [262, 330, 392, 523],
       level: [392, 494, 587, 784],
+      door: [196, 98],
     };
     (notes[name] || notes.talk).forEach((n, i) =>
       this.tone(
@@ -94,6 +96,42 @@ export class RetroAudio {
         (this.context?.currentTime || 0) + i * 0.065,
       ),
     );
+  }
+  ambience(scene, player, paused = false) {
+    if (!this.enabled || !this.context || paused) return;
+    const now = this.context.currentTime;
+    if (now < this.nextAmbient) return;
+    let notes = [],
+      type = "triangle",
+      duration = 0.08,
+      volume = 0.006;
+    if (
+      scene === "smithy" ||
+      (scene === "world" && Math.hypot(player.x - 161, player.y - 172) < 110)
+    ) {
+      notes = [880, 1760];
+      type = "square";
+      volume = 0.004;
+    } else if (scene === "inn") {
+      notes = [131, 262];
+      type = "sawtooth";
+      volume = 0.003;
+    } else if (
+      scene === "world" &&
+      ((player.x > 920 && player.x < 1050) ||
+        Math.hypot(player.x - 251, player.y - 145) < 95)
+    ) {
+      notes = [660, 1046, 784];
+      volume = 0.004;
+    } else if (scene === "world" && player.x >= 1280) {
+      notes = [1480, 1760, 1568];
+      duration = 0.055;
+      volume = 0.005;
+    }
+    notes.forEach((n, i) =>
+      this.tone(n, duration, type, volume, now + i * 0.085),
+    );
+    this.nextAmbient = now + (scene === "inn" ? 3.6 : 2.6);
   }
   tick(zone, paused = false, bossNearby = false) {
     if (!this.enabled || !this.context) return;

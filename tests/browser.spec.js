@@ -540,3 +540,78 @@ test("Kenney actors render all roles and animate; missing character sheet blocks
   );
   await expect(page.locator("#start")).toBeDisabled();
 });
+
+test("village detail sprites, four directional poses, moving merchant and dialogue pause", async ({
+  page,
+}) => {
+  const { recordMerchant } = await import("./village-probe.js");
+  const result = await page.evaluate(async () =>
+    (await import("/tests/village-probe.js")).probeVillageGraphics(),
+  );
+  expect([result.width, result.height]).toEqual([256, 384]);
+  expect(result.sprites.length).toBe(71);
+  for (const sprite of result.sprites) {
+    expect(sprite.visible, sprite.name).toBeGreaterThan(8);
+    expect(sprite.nativePixels, sprite.name).toBe(true);
+  }
+  for (const role of result.roles) expect(role.directions, role.name).toBe(4);
+  await checkpoint(page, { player: { x: 264, y: 300 } });
+  await page.evaluate(recordMerchant);
+  await page.waitForTimeout(2000);
+  const positions = await page.evaluate(() =>
+    window.__merchant.map((p) => p.x),
+  );
+  expect(
+    Math.max(...positions) - Math.min(...positions),
+  ).toBeGreaterThanOrEqual(4);
+  await checkpoint(page, { player: { x: 338, y: 251 } });
+  await interact(page, "Réka");
+  await page.evaluate(() => {
+    window.__merchant = [];
+  });
+  await page.waitForTimeout(450);
+  expect(
+    await page.evaluate(
+      () => new Set(window.__merchant.map((p) => p.x + "," + p.y)).size,
+    ),
+  ).toBe(1);
+  await close(page);
+  await page.screenshot({
+    path: "test-results/village-detail.png",
+    fullPage: true,
+  });
+  await page.route("**/assets/village/details.png", (route) => route.abort());
+  await page.reload();
+  await expect(page.locator("#overlay h2")).toHaveText(
+    "A grafika nem tölthető be",
+  );
+  await expect(page.locator("#start")).toBeDisabled();
+});
+test("GitHub Pages style subdirectory loads all local images and supports movement", async ({
+  page,
+}) => {
+  const { preparePagesFixture } = await import("./pages-fixture.js");
+  const prefix = await preparePagesFixture(),
+    errors = [],
+    png = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  page.on("request", (r) => {
+    if (new URL(r.url()).pathname.endsWith(".png"))
+      png.push(new URL(r.url()).pathname);
+  });
+  await page.goto(prefix);
+  await page.locator("#start").click();
+  await page.keyboard.down("d");
+  await page.waitForTimeout(250);
+  await page.keyboard.up("d");
+  await page.locator("#save").click();
+  expect(
+    await page.evaluate(
+      (key) => JSON.parse(localStorage.getItem(key)).player.x,
+      SAVE_KEY,
+    ),
+  ).toBeGreaterThan(270);
+  expect(png).toHaveLength(4);
+  for (const path of png) expect(path.startsWith(prefix)).toBe(true);
+  expect(errors).toEqual([]);
+});

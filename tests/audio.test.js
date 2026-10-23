@@ -104,3 +104,53 @@ test("village and forest schedule distinct melodies and effects, and muting susp
   audio.effect("buy");
   assert.deepEqual(frequencies, []);
 });
+
+test("quiet ambience is local, throttled, silent during dialogue/mute, and doors have their own effect", () => {
+  const a = new RetroAudio(),
+    events = [];
+  a.enabled = true;
+  a.context = { currentTime: 0 };
+  a.tone = (...args) => events.push(args);
+  a.ambience("world", { x: 161, y: 190 });
+  assert.deepEqual(
+    events.map((e) => e[0]),
+    [880, 1760],
+  );
+  assert.ok(events.every((e) => e[3] <= 0.006));
+  events.length = 0;
+  a.ambience("world", { x: 161, y: 190 });
+  assert.equal(events.length, 0);
+  a.context.currentTime = 3;
+  a.ambience("inn", { x: 320, y: 300 }, true);
+  assert.equal(events.length, 0);
+  a.ambience("inn", { x: 320, y: 300 });
+  assert.deepEqual(
+    events.map((e) => e[0]),
+    [131, 262],
+  );
+  events.length = 0;
+  a.context.currentTime = 8;
+  a.ambience("world", { x: 984, y: 220 });
+  assert.deepEqual(
+    events.map((e) => e[0]),
+    [660, 1046, 784],
+  );
+  events.length = 0;
+  a.context.currentTime = 12;
+  a.ambience("world", { x: 1400, y: 220 });
+  assert.deepEqual(
+    events.map((e) => e[0]),
+    [1480, 1760, 1568],
+  );
+  events.length = 0;
+  a.enabled = false;
+  a.context.currentTime = 17;
+  a.ambience("world", { x: 1400, y: 220 });
+  assert.equal(events.length, 0);
+  a.enabled = true;
+  a.effect("door");
+  assert.deepEqual(
+    events.map((e) => e[0]),
+    [196, 98],
+  );
+});
