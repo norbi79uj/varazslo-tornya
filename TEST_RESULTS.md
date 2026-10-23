@@ -1,63 +1,82 @@
-# Három Kenney-csomag – tényleges teszteredmények
+# Smaragdvölgy – részletes falu: tényleges ellenőrzések
 
-**Dátum:** 2026. október 23. **Ág:** `feat/kenney-graphics`. A működő `feat/snes-falu-kornyek` (`6003049`) és a már feltöltött Characters-mérföldkő (`f8497cd`) folytatása.
+**Dátum:** 2026. október 23. **Ág:** `feat/smaragdvolgy-village-detail`. Kiindulás: a sikeresen tesztelt és feltöltött `feat/kenney-graphics`, `ce6e837`. Első működő fejlesztési mérföldkő: `5132526`.
 
-## Lefuttatott ellenőrzések
+## Eredmények
 
-| Ellenőrzés                                                                            | Tényleges eredmény                                  |
-| ------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| `npm test`: motor, hang, grafikai források                                            | **27/27 sikeres**, 0 hibás, 0 kihagyott             |
-| `npm run test:browser`: Chromium                                                      | **10/10 sikeres**, egy teljes futásban, 0 kihagyott |
-| `npm run test:firefox`: valódi Firefox ESR, WebDriver BiDi                            | **8/8 sikeres**, 0 kihagyott                        |
-| Három Kenney PNG, három licenc, három csempeleírás összevetése a feltöltött ZIP-ekkel | **Mind a kilenc fájl bájtazonos**                   |
-| `npm run screenshots`: nyolc játékállapot                                             | Elkészültek és vizuálisan megtekintve               |
-| JavaScript-szintaxis, `git diff --check`                                              | Sikeres                                             |
+| Ellenőrzés                                                   | Eredmény                                                             |
+| ------------------------------------------------------------ | -------------------------------------------------------------------- |
+| `npm test`: motor, hang, grafika, falusi élet                | **34/34 sikeres**, 0 hibás, 0 kihagyott                              |
+| `npm run test:browser`, Chromium                             | **12/12 sikeres**, 0 kihagyott                                       |
+| `npm run test:firefox`, valódi Firefox ESR                   | **10/10 sikeres**, 0 kihagyott                                       |
+| `npm run screenshots`                                        | **10** valódi játékállapot rögzítve és vizuálisan megtekintve        |
+| Három Kenney PNG, három eredeti licenc és három csempeleírás | **Mind a kilenc fájl bájtazonos** a feltöltött ZIP-ekkel             |
+| Saját pixelatlasz és két metaadatfájl ismételt újraépítése   | **Bájtazonos kimenet**                                               |
+| Korábbi statikus játékadatok és `initialState()` összevetése | Változatlan történeti/fejlődési/ellenfél/ajtó/NPC/alapmentési adatok |
+| JavaScript-szintaxis és `git diff --check`                   | Sikeres                                                              |
 
-Környezet: Debian 13, Node.js 24.19.0, Python 3.12.14, Chromium **154.0.8037.57**, Firefox ESR **153.5.1**, Playwright **1.58.2**, Puppeteer Core **25.16.0**. Mindkét böngésző headless módban, helyi HTTP-szerverről futott. A végleges szekrény-illesztés után a teljes Chromium- és Firefox-sorozat ismét sikeresen lefutott; azóta játékkód nem változott.
+Környezet: Debian 13, Node.js **24.19.0**, Python **3.12.14**, Chromium **154.0.8037.57**, Firefox ESR **153.5.1**, Playwright **1.58.2**, Puppeteer Core **25.16.0**. Mindkét böngésző ténylegesen, headless módban, helyi HTTP-szerverről futott. Nem csupán szintaxis- vagy forráskód-ellenőrzés történt.
 
-## Mit teszteltünk mindkét böngészőben?
+## A mindkét böngészőben elvégzett játékpróbák
 
-1. **Indítás és NPC-k:** tényleges Canvas-megjelenítés; Boros, Ilona, Áron, Márton, Réka és Dénes magyar párbeszédei. Elégtelen arany elutasítása, kard- és italvásárlás, helyes aranylevonás, fogadói gyógyulás, növénygyűjtés és egyszeri jutalom.
-2. **Mozgás és harc:** WASD és nyilak, folyamatos falu–rét–erdő határátlépés mindkét irányban, kardcsapásokkal ellenfél legyőzése, TP/arany jóváírás, italhasználat, sebződés, vereség és falusi visszatérés.
-3. **Fő küldetés:** Márton megbízása, Dénes kiszabadítása, visszatérés, szerény jutalompenge, szintlépés, Tövisúr tényleges kardcsapásokkal történő legyőzése és a kapu megnyitásának megőrzése. A nyitott kapuküszöb átlépését külön mozgási próba is ellenőrzi.
-4. **Titkos pince:** belépés a kunyhóba, naplóolvasás, külön kézi szekrényvizsgálat és félretolás, lejutás, felirat, hibás rúnasorrend nullázása, helyes sorrend, egyszeri medál/arany/ital, belső mentés és visszaút. Napló nélkül a szekrény nem nyit átjárót.
-5. **Mentés és ajtók:** mentés, oldal-újratöltés és folytatás; mind a kilenc falusi ajtó be- és kilépése a megfelelő visszatérési pontra, belső mentés, kovács párbeszéde bent, bútorütközés. Firefoxban a bélelt mellény vásárlása és +1 maximális életereje is ellenőrzött.
-6. **Pályaütközés:** víznél megállás, valódi átsétálás a fahídon, déli térképrész és kamerakövetés, zárt és nyitott északi kapu.
-7. **Három Kenney-forrás:** a két környezeti PNG HTTP-betöltése és mérete, mind az **59 környezeti grafikai definíció** tényleges rajzolása, látható pixelek és minden 2 × 2 pixeles blokk azonossága. Mind a **10 szereplőprofil** látható és a mozgatott képkockái különböznek. A teljes jelenet húsznál több színt tartalmaz.
-8. **Felület és hang:** hangerő, némítás, külön falusi/erdei zenei oszcillátorsorok, sérült mentés, újrakezdés megerősítése/megszakítása, mobilméretű nézet túlcsordulás nélkül. Firefoxban külön főellenfél-zene is ellenőrzött.
+1. **Indítás, NPC-k és kereskedés:** Boros, Ilona, Áron, Márton, Réka és Dénes magyar párbeszédei; elégtelen arany elutasítása; kard- és italvásárlás, helyes aranylevonás; fogadói gyógyulás; növénygyűjtés és egyszeri jutalom.
+2. **Mozgás és harc:** WASD és nyilak; folyamatos falu–rét–erdő váltás mindkét irányban; kardcsapásokkal ellenfél legyőzése, TP és arany; gyógyital; sebződés, vereség, visszatérés a faluba.
+3. **Dénes és Tövisúr:** megbízás felvétele, Dénes kiszabadítása, visszatérés, szerény jutalompenge, szintlépés, Tövisúr tényleges kardcsapásokkal történő legyőzése, kapunyitás mentése. Külön mozgásteszt ellenőrzi a lezárt, majd nyitott kapuküszöböt.
+4. **Titkos pince:** kunyhóba belépés, naplóolvasás, szekrény kézi vizsgálata és félretolása, lejutás, felirat, hibás rúnasorrend nullázása, helyes sorrend, egyszeri medál/arany/ital, belső mentés és visszaút. Napló nélkül a szekrény nem nyit átjárót.
+5. **Ajtók, mentés és ütközés:** mind a kilenc falusi ajtó be- és kilépése a megfelelő visszatérési pontra; belső mentés, oldal-újratöltés és folytatás; kovács beszélgetése bent; bútorütközés; víznél megállás és valódi átsétálás a fahídon. Firefoxban a bélelt mellény megvásárlása és +1 életereje is lefutott.
+6. **Felület és hang:** némítás, hangerő megőrzése, külön falusi és erdei hangfrekvenciák, Firefoxban főellenfél-zene; hibás mentés kezelése, újrakezdés megerősítése/megszakítása, keskeny nézet vízszintes túlcsordulás nélkül.
+7. **Grafika:** mind a **66 elérhető Kenney-környezeti definíció** és **72 saját kiegészítő grafika** tényleges Canvas-rajzolása, látható pixelek, minden 2 × 2 pixeles blokk azonossága. Mind a tíz szereplőprofil járási képkockái különböznek, és mindegyiküknek **négy eltérő irányképe** van. A teljes jelenet húsznál több színt tartalmaz.
+8. **Valódi NPC-mozgás:** a futó játék Canvas-rajzolási transzformációit figyelő teszt kiméri Réka vízszintes helyváltoztatását; a megnyitott párbeszéd alatt a pozíció változatlan. A pult, Réka és a játékos tényleges kirajzolási sorrendjét is ellenőrzi: Réka a pult mögött, az előtte álló lovag a pult előtt látszik.
+9. **GitHub Pages elérési útjának modellezése:** valódi helyi HTTP-alkönyvtárból indul a teljes játék, az összes modul és **mind a négy PNG** relatív útvonalról betöltődik, és billentyűkkel mozgatva a lovag helye ténylegesen változik a mentésben. A teszt nem helyettesíti az éles GitHub Pages közzététel ellenőrzését.
 
 A teljes Firefox-futásban **0 alkalmazásból érkező JavaScript-hiba és 0 külső erőforráskérés** volt.
 
 ## További Chromium-próbák
 
-- Az RPG és Indoor PNG-k letöltésének külön-külön szándékos megszakítása látható grafikai hibát és tiltott indítást eredményez. Az R és a Betöltés sem kerüli meg a hibát. A Characters PNG ugyanilyen külön hibapróbája is sikeres.
-- A régi `smaragd-atlas.png` blokkolása mellett is elindul a játék; a böngésző nem is kéri ezt a fájlt. Nincs régi atlaszos helyettesítés vagy külső grafikai kérés.
-- A Canvas CSS-megjelenítése `pixelated`; az összes környezeti elem egész pixeles, élsimítás nélküli nagyítással rajzolódik.
-- Házfal ütközése és a mentett pozíció ellenőrzése.
-- TouchStart/touchEnd érintésemuláció ténylegesen mozgatja a lovagot; az E-gomb érintése Réka párbeszédét nyitja meg.
-- Teljes felszerelésű 5. szint és 11/11 életerő mellett, 390 × 844-es nézetben sincs vízszintes túlcsordulás.
+- Az RPG-, Indoor- és Characters-PNG külön-külön szándékos megszakítása látható grafikai hibát és tiltott indítást eredményez. Az R és a Betöltés nem kerüli meg a Kenney-lapok hibáját.
+- Az új `assets/village/details.png` megszakított betöltése is láthatóan megállítja az indítást. Nincs geometriai helyettesítő pálya.
+- A régi `smaragd-atlas.png` blokkolása mellett elindul a játék; azt a böngésző nem is kéri.
+- Canvas CSS: `pixelated`. A natív képpontok az új grafikai lapnál is élesek.
+- Érintésemulációval az iránygomb mozgat, az E-gomb Réka párbeszédét nyitja meg.
+- Teljes felszerelésű 5. szint, 11/11 életerő és 390 × 844-es nézet mellett sincs vízszintes túlcsordulás.
 
-## Logikai és forrásellenőrzések
+## A 34 motor-, hang- és adatellenőrzés
 
-A 23 korábbi motor-/hangteszt megmaradt: irányított kardcsapás és várakozási idő, egyszeri jutalmak, távoli újraéledés, 1–5. szint, ütközések, párbeszéd alatti szünet, árak, mellény, italok, növény- és mentési küldetés, főellenfél-pajzs, végleges győzelem, jelzés nélküli szekrény, naplófüggés, rúnák, vereség, teljes mentési kör, sérült/tiltott tárhely és hibás mentésadatok, kilenc ajtó, v1-mentés migrációja, kapuküszöb, hanghibák, három zene, hangerő/némítás.
+A 20 korábbi motorteszt megmaradt. Ezek az irányított kardcsapást, támadási várakozási időt, egyszeri jutalmakat, távoli újraéledést, 1–5. szintet, ütközést, párbeszéd alatti szünetet, árakat, felszerelést, italokat, küldetéseket, főellenfél-pajzsot, győzelmet, jelzés nélküli szekrényt, naplófüggést, rúnákat, vereséget, mentést, sérült adatokat, ajtókat, v1-migrációt és kapuküszöböt fedik le.
 
-Négy grafikai teszt ellenőrzi a három PNG SHA-256 azonosítóját, képfejléc-méreteit és CC0-licenceit, a tíz karakterprofil forráskoordinátáit, valamint az összes környezeti kompozíció forrás- és célterületi határait. A tesztek mellett a kilenc eredeti PNG/licenc/leírás teljes bájtazonosságát közvetlenül a feltöltött ZIP-ekből is ellenőriztük.
+Négy hangteszt ellenőrzi a hiányzó/hibás/függő hangkimenetet, három zenetémát, hangerőt/némítást, valamint a halk, helyhez kötött, időben korlátozott környezeti hangokat. A háttérhangok párbeszédben és némításkor nem ütemeződnek, a rövid ajtóhang külön frekvenciasort kapott.
 
-Az `engine.js`, `world.js`, `game.js`, `audio.js`, a mentési kulcs és adatséma ebben a grafikai folytatásban nem változott. A régi mentések használhatók; nincs újrakezdési követelmény.
+Öt grafikai teszt ellenőrzi a három Kenney PNG hashét, méretét és CC0-licencét, a tíz karakter forráskoordinátáit, a környezeti kompozíciók határait, valamint a saját PNG méretét, 72 képkivágását és saját CC0-licencét.
 
-## Vizuális ellenőrzés
+Öt új falusi teszt:
 
-Az `artifacts/previews/` nyolc valódi játékállapota: falu, déli falu, patak/híd, erdő, sziklás magaslat, kunyhó, pince, kovácsműhely. Megtekintve ellenőriztem a fákat, házakat, szereplőket, bútorokat, kövezetet, hidat, vízpartok helyes irányát, szekrényt és egységes pixelméretet. Az első képeken észlelt hibás talajszegélyeket, felcserélt folyópartokat, ajtó- és bútorcsempéket a végleges ellenőrzések előtt javítottam.
+- Négy helyszín rutinjai 60 másodpercnyi szimuláció alatt minden útvonalpontot meglátogatnak, akadályba lépés és helyváltoztatási ugrás nélkül.
+- A mozgó NPC látható pozíciója a megszólítás helye; beszélgetéskor a játékos felé fordul, és a teljes rutinóra megáll.
+- Járhatósági keresés igazolja mind a kilenc ajtó megközelíthetőségét; az új kerítések és kút valóban akadályok.
+- Korábbi szabályos v2-mentés új kültéri vagy belső díszletbe kerülő pozícióját közeli járható pontra igazítjuk, fejlődésvesztés nélkül.
+- Az NPC-állapot nem kerül a mentésbe; a séma v2 marad, új játék és betöltés újraindítja a rutinokat.
 
-A képernyőképek fejlesztői bizonyítékok, nem részei a Gitbe kerülő játékkódnak. A tényleges grafikai lapok, CC0-licencek, csempeleírások és renderelési jegyzékek verziókezeltek.
+Külön összehasonlítás igazolta, hogy a `ce6e837` verzióhoz képest változatlan a `WORLD`, `LEVEL_XP`, `WEAPONS`, `BUILDINGS`, `NPCS`, `HERBS`, `ENCOUNTERS`, `OBJECTS`, `STREAM`, `INTERIORS` és az `initialState()` kimenete. A párbeszédek kiegészültek, a korábbi történet, árak és jutalmak megmaradtak. A falusi élet külön, nem mentett osztályban működik.
 
-## Módszer és korlátok
+## Vizuális ellenőrzés és reprodukálhatóság
 
-A hosszú sétákat normál mentésadatokból készített ellenőrzőpontok rövidítik. A tényleges játékműveletek DOM-gombokkal, billentyűkkel és érintésemulációval történnek; a böngészős tesztek nem hívják közvetlenül a játék motorfüggvényeit. A grafikai próbák külön Canvas-ra is rajzolnak. Ez nem egyetlen megszakítás nélküli, kézi végigjátszás mérése.
+A tíz megtekintett kép: falu, piac, fogadó, déli falu, patak/híd, erdő, sziklás magaslat, kunyhó, pince, kovácsműhely. Ellenőriztem a négyféle cserepezett tetőt, kerek kutat, standot, kovács- és favágóeszközöket, füstöt, kerteket, cégtáblákat, tyúkokat, árnyékokat, erdei tónust, fogadóbelsőt, bútorokat és karakterarányokat.
 
-A Kenney szereplők statikus rétegeiből lábelmozdítással és kis testmozgással készül animáció; a csomag nem kész járássorozatként van feltüntetve. Fizikai mobiltelefonos és hangszórós próba nem történt. A Web Audio ellenőrzése Firefoxban virtuális PulseAudio-kimenetet használ.
+A képek alapján javult a piaci pult rétegzése: nem takarja el az előtte álló lovagot. A fogadó korábbi, bútorcsempékből összerakott szőnyege saját sík, mintás pixelrajzot kapott. A végleges változat után a teljes böngészős sorozatok újra lefutottak.
 
-A korlátozott konténerben használt Firefox-parancs:
+A saját PNG és két metaadatfájl újraépítése azonos bájtokat adott. Végleges `details.png` SHA-256: `264a07719c49cbf3722ab5ca7828a3526d7b4b39a65d3079d5128f2fafa4503c`. Az eredeti Kenney-fájlok külön ZIP-összevetése mind a kilenc fájlnál sikeres.
+
+A képek helye `artifacts/previews/`, Git által figyelmen kívül hagyva. A tényleges PNG-k, licencek, képkivágások és saját szerkeszthető pixelrajzforrás viszont verziókezeltek.
+
+## Módszer, közzététel és korlátok
+
+A hosszú sétákat normál mentésadatokból készített ellenőrzőpontok rövidítik. A böngészős játékműveletek felületi gombokkal, billentyűkkel és érintésemulációval történnek; nem közvetlen motorhívásokkal. A grafikai próbák külön Canvas-ra is rajzolnak. Ez nem egyetlen megszakítás nélküli, kézi végigjátszás mérése.
+
+Az irányképek a Kenney-frontképekre illeszkedő saját fej-/hátrétegek. A bal oldal tükrözött saját oldalállás, a lábmozgás és testmozgás a statikus csempéket animálja; nem Kenney-féle kész négyirányú járássorozatként dokumentáltuk. Fizikai mobiltelefonos és hangszórós próba nem történt; Firefoxban virtuális PulseAudio-kimenet működött.
+
+**A GitHub Pages közzétételi beállításait nem módosítottuk.** Az API a jelenlegi Pages-forrás lekérésére `Forbidden` választ adott. Az alkönyvtáras helyi teszt kompatibilitást igazol, élő közzétételt nem. Ha a Pages másik ágat szolgál ki, az új változat megjelenítéséhez kézi forráságváltás vagy a meglévő közzétételi folyamatba emelés szükséges; útmutató a README-ben.
+
+A korlátozott konténer Firefox-parancsa:
 
 ```sh
 FIREFOX_PATH=/tmp/smaragd-firefox/runtime/usr/lib/firefox-esr/firefox-esr \
@@ -70,4 +89,4 @@ PULSE_SERVER=unix:/tmp/smaragd-pulse/run/native \
 npm run test:firefox
 ```
 
-Ezek a tesztgép beállításai, a játék nem módosítja a felhasználó böngészőjének beállításait. A Firefox Debian-csomagból, aláírt csomagindex alapján került `/tmp` alá; TLS- és aláírás-ellenőrzést nem kapcsoltunk ki. A Playwright Firefox-letöltését a proxy blokkolta, ezért valódi Firefox ESR-rel és Puppeteer WebDriver BiDi-vel teszteltünk.
+Ezek a tesztgép beállításai; a játék nem módosítja a felhasználó böngészőjét. A Firefox aláírt Debian-csomagindex alapján került `/tmp` alá, TLS- és aláírás-ellenőrzés kikapcsolása nélkül. A Playwright Firefox-letöltését korábban a proxy blokkolta; a próba valódi Firefox ESR-rel, Puppeteer WebDriver BiDi-vel történt.

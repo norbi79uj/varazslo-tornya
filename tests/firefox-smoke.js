@@ -520,7 +520,7 @@ try {
         (await import("/tests/village-probe.js")).probeVillageGraphics(),
       );
       assert.deepEqual([result.width, result.height], [256, 384]);
-      assert.equal(result.sprites.length, 71);
+      assert.equal(result.sprites.length, 72);
       for (const sprite of result.sprites) {
         assert.ok(sprite.visible > 8, sprite.name);
         assert.equal(sprite.nativePixels, true, sprite.name);
@@ -546,6 +546,14 @@ try {
         ),
         1,
       );
+      await page.waitForFunction(() => {
+        const o = window.__drawOrder;
+        return (
+          ["merchant", "counter", "hero"].every((n) => o.includes(n)) &&
+          o.indexOf("merchant") < o.indexOf("counter") &&
+          o.indexOf("counter") < o.indexOf("hero")
+        );
+      });
       await close();
       await page.screenshot({
         path: "test-results/village-detail-firefox.png",

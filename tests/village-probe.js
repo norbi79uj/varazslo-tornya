@@ -51,14 +51,31 @@ export async function probeVillageGraphics() {
 // Observe the real merchant's Canvas transform without adding debug hooks to the game.
 export function recordMerchant() {
   window.__merchant = [];
+  window.__drawOrder = [];
   const original = CanvasRenderingContext2D.prototype.drawImage;
   CanvasRenderingContext2D.prototype.drawImage = function (...args) {
+    if (args[0] instanceof HTMLCanvasElement && args[0].width === 1920)
+      window.__drawOrder = [];
+    if (
+      args[0]?.src?.includes("details.png") &&
+      args[3] === 36 &&
+      args[4] === 16
+    )
+      window.__drawOrder.push("counter");
+    if (
+      args[0]?.src?.includes("roguelikeChar_transparent.png") &&
+      args[1] === 0 &&
+      args[2] === 187 &&
+      args[4] === 13
+    )
+      window.__drawOrder.push("hero");
     if (
       args[0]?.src?.includes("roguelikeChar_transparent.png") &&
       args[1] === 0 &&
       args[2] === 170 &&
       args[4] === 13
     ) {
+      window.__drawOrder.push("merchant");
       const t = this.getTransform();
       window.__merchant.push({
         x: Math.round(t.e + 16 * t.a),

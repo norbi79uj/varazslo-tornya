@@ -371,7 +371,7 @@ export class Renderer {
       this.sprite("table", 380, 127);
       this.sprite("table", 215, 227);
       this.sprite("barrel", 471, 112);
-      this.sprite("rug", 300, 236);
+      this.detail("tavernRug", 300, 236);
     } else if (s.scene === "shop") {
       this.sprite("table", 288, 128);
       this.sprite("chest", 135, 100);

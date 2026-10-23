@@ -425,6 +425,12 @@ export const DETAIL_SPRITES = {
     "y": 154,
     "w": 16,
     "h": 16
+  },
+  "tavernRug": {
+    "x": 0,
+    "y": 172,
+    "w": 48,
+    "h": 48
   }
 };
 export const DETAIL_PALETTE = {

@@ -491,6 +491,30 @@ for (const [name, [hair, shirt]] of Object.entries(families))
         rect(5, 8, 6, 4, P.wood);
       }
     });
+// A flat woven rug, rather than repurposing furniture tiles as floor fabric.
+sprite("tavernRug", 48, 48, () => {
+  rect(1, 1, 46, 46, "#75514a");
+  rect(2, 2, 44, 44, P.tan);
+  rect(4, 4, 40, 40, "#984f47");
+  for (let j = 5; j < 44; j += 4) {
+    pixel(j, 3, P.cream);
+    pixel(j, 44, P.cream);
+    pixel(3, j, P.cream);
+    pixel(44, j, P.cream);
+  }
+  for (let y = 9; y < 42; y += 10)
+    for (let x = 9; x < 42; x += 10) {
+      line(x, y - 3, x + 3, y, P.tan);
+      line(x + 3, y, x, y + 3, P.tan);
+      line(x, y + 3, x - 3, y, P.tan);
+      line(x - 3, y, x, y - 3, P.tan);
+      pixel(x, y, P.cream);
+    }
+  for (let x = 3; x < 46; x += 3) {
+    pixel(x, 0, P.cream);
+    pixel(x, 47, P.cream);
+  }
+});
 // PNG encoder, with standard zlib compression and CRC-32 chunks.
 const crc32 = (b) => {
   let c = 0xffffffff;

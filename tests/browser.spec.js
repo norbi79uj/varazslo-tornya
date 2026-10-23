@@ -549,7 +549,7 @@ test("village detail sprites, four directional poses, moving merchant and dialog
     (await import("/tests/village-probe.js")).probeVillageGraphics(),
   );
   expect([result.width, result.height]).toEqual([256, 384]);
-  expect(result.sprites.length).toBe(71);
+  expect(result.sprites.length).toBe(72);
   for (const sprite of result.sprites) {
     expect(sprite.visible, sprite.name).toBeGreaterThan(8);
     expect(sprite.nativePixels, sprite.name).toBe(true);
@@ -575,6 +575,14 @@ test("village detail sprites, four directional poses, moving merchant and dialog
       () => new Set(window.__merchant.map((p) => p.x + "," + p.y)).size,
     ),
   ).toBe(1);
+  await page.waitForFunction(() => {
+    const o = window.__drawOrder;
+    return (
+      ["merchant", "counter", "hero"].every((n) => o.includes(n)) &&
+      o.indexOf("merchant") < o.indexOf("counter") &&
+      o.indexOf("counter") < o.indexOf("hero")
+    );
+  });
   await close(page);
   await page.screenshot({
     path: "test-results/village-detail.png",

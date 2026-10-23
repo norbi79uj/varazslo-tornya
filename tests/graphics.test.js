@@ -128,7 +128,7 @@ test("original supplementary art is local, CC0, and all sprite regions fit the P
   assert.equal(png.readUInt32BE(16), DETAIL_SHEET.width);
   assert.equal(png.readUInt32BE(20), DETAIL_SHEET.height);
   assert.match(license, /CC0 1.0 Universal/);
-  assert.equal(Object.keys(DETAIL_SPRITES).length, 71);
+  assert.equal(Object.keys(DETAIL_SPRITES).length, 72);
   for (const [name, s] of Object.entries(DETAIL_SPRITES)) {
     assert.ok(
       s.x >= 0 &&

@@ -237,7 +237,7 @@ export function addVillageProps(r, game, layers) {
   for (const p of VILLAGE_PROPS) {
     const size = p.kenney ? { h: 16 } : DETAIL_SPRITES[p.art];
     layers.push({
-      y: p.y + size.h * 2,
+      y: p.foot ? p.foot.y + p.foot.h : p.y + size.h * 2,
       draw: () => {
         if (p.foot) {
           r.ctx.globalAlpha = 0.45;

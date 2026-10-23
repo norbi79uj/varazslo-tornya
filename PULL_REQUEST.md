@@ -1,9 +1,11 @@
-# Smaragdvölgy: egységes Kenney CC0 pixelgrafika
+# Smaragdvölgy: részletes SNES-falu és élő falusi környezet
 
-A működő Smaragdvölgy RPG-t a felhasználó három feltöltött Kenney-csomagjával frissíti. A Roguelike pack adja a tájat, növényzetet és épületeket, a Characters 2.0 a lovagot, NPC-ket és ellenfeleket, az Indoor pack a belső padlókat és bútorokat. Az eredeti PNG-k, CC0-licencek és csempeleírások helyben szerepelnek; a forrásokat és minden képkivágást az ASSET_CREDITS.md dokumentálja.
+Smaragdvölgy kövezett főteret, kerek kutat, négy cserepezett tetőcsaládot, kerteket, cégtáblákat, részletes kovács- és favágóműhelyt, vászontetős piacot és bútorozott fogadót kap. A lakók rövid útvonalakat járnak be, dolgoznak és beszélgetéskor megállnak, a játékos felé fordulnak. A karakterek négy irányállással jelennek meg; tyúkok, pillangók, füst, víz és halk környezeti hangok egészítik ki a falut.
 
-A grafikai ág a működő `feat/snes-falu-kornyek` verzióból folytatódik. A mozgás, kardharc, mentések, NPC-k, kereskedés, küldetések, főellenfél és titkos pince megmaradt. Az új csempézés az eredeti ütközési területhez igazodik, egész pixeles nagyítással. A játék három helyi Kenney-lapot tölt, a régi saját atlaszt már nem használja; hiányzó lapnál látható hiba tiltja az indítást.
+Kiindulás a működő `feat/kenney-graphics` (`ce6e837`), új ág: `feat/smaragdvolgy-village-detail`. A történet, árak, ellenfelek, Dénes-küldetés, Tövisúr, ajtók és titkos pince megmaradnak. A mentési séma v2, az NPC-rutinok nem mentettek; új díszletbe eső régi pozíció közeli járható helyre kerül. A rajzolás és interakció azonos NPC-pozíciókat használ.
 
-Ellenőrzés: `npm test` **27/27**, Chromium **10/10**, valódi Firefox ESR **8/8**. Lefedett a mozgás, harc, NPC-párbeszéd, vásárlás, mentés/visszatöltés, kilenc ajtó, híd, főellenfél és titkos pince. Mind az 59 környezeti elem és 10 szereplőprofil valódi Canvas-próbán ment át. Nyolc játékállapot képernyőképe vizuálisan ellenőrizve. A PNG-k, licencek és leírások bájtazonosak a feltöltött ZIP-ekkel. Részletes eredmények és korlátok: TEST_RESULTS.md.
+A három eredeti Kenney CC0-lap és licence változatlan. A hiányzó részletekhez 72 saját CC0 pixelrajz készült, helyi PNG-vel és reprodukálható JavaScript-forrással. Az eredet és hozzárendelések az ASSET_CREDITS.md fájlban szerepelnek.
 
-A `main` és a korábbi működő ágak változatlanok; ez a PR nem hajt végre összeolvasztást. Windows EXE nem készült.
+Ellenőrzés: `npm test` **34/34**, Chromium **12/12**, valódi Firefox ESR **10/10**. Mozgás, harc, NPC-k, kereskedés, gyógyítás, teljes fő küldetés, főellenfél, titkos pince, mentés, kilenc ajtó, új ütközések, négy irányállás, NPC-mozgás/párbeszédszünet és pult mögötti/előtti helyes rétegzés ellenőrizve. Tíz valódi játékállapot képe megtekintve, saját grafika újraépítése bájtazonos. Részletek és korlátok: TEST_RESULTS.md.
+
+A GitHub Pages jellegű HTTP-alkönyvtáras indítás mindkét böngészőben működik. A közzétételi beállításokhoz nem nyúltunk; az ág publikálásához szükséges kézi lépést a README leírja. A korábbi ágak változatlanok. Windows EXE nem készül.
