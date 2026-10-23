@@ -1,59 +1,59 @@
-# Smaragdvölgy – tényleges ellenőrzések
+# SNES-falu és környék – tényleges teszteredmények
 
-Dátum: **2026. október 23.** A tesztek a `feat/smaragdvolgy` fejlesztésén, valódi böngészőkkel, helyi HTTP-szerverről futottak. Nem készült Windows EXE.
+**Dátum:** 2026. október 23. **Fejlesztési ág:** `feat/snes-falu-kornyek`.
 
-## Végső eredmények
+| Ellenőrzés                                                                      | Eredmény                                |
+| ------------------------------------------------------------------------------- | --------------------------------------- |
+| Logikai és hangkezelési tesztek, `npm test`                                     | **23/23 sikeres**, 0 hibás, 0 kihagyott |
+| Chromium, `npm run test:browser`                                                | **9/9 sikeres**, 0 hibás, 0 kihagyott   |
+| Firefox ESR, `npm run test:firefox`                                             | **8/8 sikeres**, 0 hibás, 0 kihagyott   |
+| Az utolsó grafikai hibakezelési módosítás célzott Chromium-ellenőrzése          | **1/1 sikeres**                         |
+| JavaScript szintaxis és `git diff --check`                                      | Sikeres                                 |
+| Grafikai atlasz és koordináták megismételt újraépítése, SHA-256 összehasonlítás | Azonos kimenetek                        |
+| Nyolc játékállapot képernyőképeinek elkészítése és vizuális megtekintése        | Sikeres                                 |
 
-| Ellenőrzés                                       | Eredmény                                  |
-| ------------------------------------------------ | ----------------------------------------- |
-| `npm test` – játékmenet, mentés és hangkezelés   | **19 / 19 sikeres**, 0 hibás, 0 kihagyott |
-| `npm run test:browser` – Chromium                | **5 / 5 sikeres**, 0 hibás, 0 kihagyott   |
-| `npm run test:firefox` – Firefox, WebDriver BiDi | **5 / 5 sikeres**, 0 hibás, 0 kihagyott   |
-| `git diff --check`                               | Sikeres                                   |
+Környezet: Debian 13, Node.js 24.19.0, Python 3.12.14, Chromium **154.0.8037.57**, Firefox ESR **153.5.1**, Playwright **1.58.2**, Puppeteer Core **25.16.0**. A böngészők ténylegesen, headless módban futottak, helyi HTTP-szerverről.
 
-Környezet: Debian GNU/Linux 13, Node.js 24.19.0, Python 3.12.14, Chromium **154.0.8037.57**, Firefox ESR **153.5.1**, Playwright **1.58.2**, Puppeteer Core **25.16.0**. A böngészők headless módban futottak.
+## Mit végzett el a böngészős teszt?
 
-## Böngészős forgatókönyvek
+**Mindkét böngészőben:**
 
-Mindkét böngészőben végrehajtva:
+1. Indítás, tényleges játékrajzolás; Boros, Ilona, Áron, Márton, Réka és Dénes párbeszédei; elégtelen arany elutasítása; kard- és italvásárlás; gyógyulás; növénygyűjtés és egyszeri falusi jutalom; oldal-újratöltés utáni visszatöltés.
+2. WASD és nyilak; falu–rét–erdő határátlépés mindkét irányban; kardcsapásokkal ellenfél legyőzése; TP/arany jóváírás; gyógyital; ellenféltől sebződés és vereség; visszatérés a faluba helyes aranyveszteséggel.
+3. Teljes mentési küldetés: zárt kapu, Márton megbízása, Dénes kiszabadítása, visszatérés, jutalompengéje, szintlépés, Tövisúr valódi kardcsapásokkal történő legyőzése, győzelem és a nyitott kapu állapotának mentése.
+4. Kunyhóba belépés, napló, szekrény első és második kézi vizsgálata, retesz/félretolás, pince; felirat; zárt láda; hibás rúnasorrend nullázása; helyes sorrend; egyszeri medál/arany/ital; belső helyszín visszatöltése és kijutás.
+5. Hang ki/be, sérült mentés kezelése, új játék megerősítése és megszakítása, mobilméretű nézet túlcsordulás nélkül.
+6. A helyi PNG-atlasz sikeres HTTP-betöltése; 74 sprite/csempe, megfelelő forrásméretek és több mint húsz ténylegesen megrajzolt szín ellenőrzése a Canvas-pufferből. A teljes Firefox-futásban **0 alkalmazásból érkező JavaScript-futáshiba és 0 külső erőforráskérés** volt.
+7. Mind a **kilenc falusi ajtó** be- és kilépése, belső helyszín mentése és oldal-újratöltés utáni folytatása; kovács belső párbeszéde; bútorütközés; napló nélkül a szekrény nem nyit rejtekutat. Firefoxban a bélelt mellény tényleges megvásárlása, helyes aranylevonása és +1 maximális életereje is lefutott.
+8. Víznél megálló mozgás; a fahídon tényleges átsétálás; hangerő és visszaállítása; zárt kapunál mozgáskorlát, legyőzött főellenfélnél a kapuküszöb tényleges átlépése és megőrzése. Firefoxban a főellenfél-zene saját hangfrekvenciáinak ellenőrzése is lefutott.
 
-1. **Falusi élet és kereskedés:** Boros párbeszéde; elégtelen arannyal sikertelen vásárlás, változatlan arany és fegyver; edzett vaskard megvétele 24 aranyért; Réka gyógyitalának megvétele 8 aranyért; Ilonánál 5 aranyért gyógyulás; Áron története; három külön növény felvétele a réten, Ilona egyszeri jutalma; böngészőoldal újratöltése után a fegyver, arany és italok visszatöltése.
-2. **Mozgás és harc:** WASD és nyilak; falu–rét és rét–erdő határátlépés mindkét irányban; réti ellenfél tényleges kardcsapásokkal legyőzése, arany és TP jóváírása; Q-val gyógyítás; ellenféltől sebzés, vereség; Esc nem kerüli meg a vereséget; visszatérés a faluba, helyes aranyveszteséggel. Chromiumban házfalnak mozgás és a pozíció ellenőrzése is lefutott.
-3. **Fő küldetés:** zárt északi kapu; Márton megbízása; Dénes kiszabadítása; visszatérés és jutalomátvétel; a 2 sebzésű erdőjáró penge és 2. szint ellenőrzése; Tövisúr legyőzése valódi, ismételt kardcsapásokkal; győzelmi párbeszéd; a kapu megnyílása és állapotának megőrzése oldal-újratöltés után. Az északi világ nem járható.
-4. **Kunyhó és pince:** belépés E-vel, napló olvasása; a szekrény első vizsgálata még nem mozdítja el; második vizsgálat és külön félretolási döntés; lejutás; felirat; zárt láda; rossz rúnasorrend nullázása; helyes sorrend (kelet → dél → nyugat); a rézmedál, +1 maximális életerő, 15 arany és ital ellenőrzése; ismételt jutalom kizárása; pinceállapot visszatöltése teljes oldal-újratöltés után; kijutás a pincéből és a kunyhóból.
-5. **Kezelőfelület és hibakezelés:** hang ki/be; sérült JSON-mentés elutasítása; új játék megerősítése és megszakítása; 390 × 844-es nézet vízszintes túlcsordulás nélkül. Firefoxban a falu és az erdő eltérő, ténylegesen ütemezett oszcillátorfrekvenciáit is ellenőriztük. A teljes Firefox-futásban 0 alkalmazásból érkező JavaScript-futáshiba és 0 külső tartalomkérés volt.
+**További Chromium-ellenőrzések:**
 
-A tesztek mentési ellenőrzőpontokkal helyezik el a lovagot a vizsgált helyzetekben. **Nem egyetlen, megszakítás nélküli, kézzel végigjátszott útvonalat mérnek.** A párbeszédeket, vásárlást, gyűjtést, harcot, helyszínváltást, rejtvényt és mentést a tényleges kezelőfelülettel/billentyűzettel végzik; nem hívják közvetlenül a játékmotor műveleteit. A tesztek helyenként ellenőrzött aranyat/életerőt állítanak be a konkrét esetre. A szabad kültéri határátlépést tényleges mozgás ellenőrzi.
+- CSS és JavaScript HTTP-betöltése, a Canvas `pixelated` megjelenítési stílusa.
+- A PNG szándékosan megszakított letöltése látható hibaüzenetet és tiltott indítást eredményez. R és Betöltés sem tudja elrejteni vagy megkerülni ezt az állapotot; nincs geometriai helyettesítő pálya.
+- Házfal ütközése és a mentett pozíció ellenőrzése.
+- **Érintéses emuláció:** valódi böngészős touchStart/touchEnd eseménnyel nyomva tartott iránygomb ténylegesen mozgatja a lovagot; E-gomb érintésével Réka párbeszéde nyílik meg.
+- Teljes felszerelésű 5. szint, **11/11 életerő**, 390 × 844-es nézet: nincs vízszintes túlcsordulás.
 
-## A 19 logikai ellenőrzés tartalma
+A tesztek a hosszú sétákat mentési ellenőrzőpontokkal rövidítik. A tényleges műveletek a felületen, billentyűkkel vagy érintéssel történnek; a motor közvetlen függvényeit a böngészős forgatókönyvek nem hívják. A nyitott kapu önálló mozgástesztje kész végállapotot használ, a főellenfél legyőzése külön, teljes küldetéses forgatókönyvben valódi harccal történik. Ez nem egyetlen, megszakítás nélkül kézzel végigjátszott útvonal mérése.
 
-- Irányított kard: rossz irányból nincs találat, támadási várakozás érvényesül.
-- Ellenfél legyőzéséért egyszer jár jutalom; a közönséges ellenfél csak távol éled újra.
-- Szintküszöbök, 5-ös szintkorlát, teljes gyógyulás és maximális életerő növekedése.
-- Épület- és pályahatár-ütközés; folytonos helyszínhatárok.
-- Párbeszéd szünetelteti a mozgást és harcot, nem marad beragadt billentyű.
-- Kovács: elégtelen arany, egyszeri levonás, szerény fegyverfejlesztés.
-- Kereskedő, fogadó, italok: helyes árak, teljes életerőn nincs felesleges fogyasztás.
-- Egyszer gyűjthető növények, pontosan három gyógyfű és egyszeri jutalom.
-- Mentési küldetés, egyszeri fegyver/arany/TP-jutalom, főellenfél pajzsa.
-- Tövisúr a küldetés nélkül nem sebezhető; legyőzése végleges, a kapu megnyílik.
-- A szekrény mellett **nincs automatikus közelségi felirat**; megvizsgálás és elmozdítás külön kézi művelet.
-- Napló utalása, rossz és helyes rúnasorrend, egyszeri pincejutalom.
-- Sebzés, vereség és feléledés a fejlődés elvesztése nélkül.
-- Új motorpéldányba teljes mentési kör, beleértve a pince/rúnák/ellenfelek állapotát.
-- Hiányzó, sérült, idegen verziójú vagy hozzáférhetetlen mentés nem írja felül az aktív játékot.
-- Hibás koordináták, életerő, hiányzó ellenfelek, ismeretlen fegyver és sérült állapot elutasítása.
-- Hiányzó vagy hibát jelző Web Audio esetén a játék némán működik tovább.
-- Örökké függő hangindítás 2,5 másodperc után megszakad, a kapcsoló nem ragad le.
-- Eltérő falu/erdő dallam, vásárlási/támadási hangok és némítás működése.
+## A 23 logikai ellenőrzés
 
-## Firefox és hang: a környezet pontosítása
+A motor- és hangtesztek lefedik az irányított támadást és várakozási időt, egyszeri jutalmakat és távoli újraéledést, 1–5. szintet, épület/pályahatárt, párbeszéd alatti szünetet, árakat és pénzhiányt, mellényt és teljes életerőn el nem fogyó italokat, növényküldetést, mentési küldetést és főellenfél-pajzsot, végleges győzelmet, a szekrény automatikus jelzésének hiányát, naplófüggést, rúnarejtvényt, vereséget, teljes mentési kört, sérült/tiltott tárhelyet, hibás koordináták és tárgyadatok elutasítását, víz/híd/szikla ütközést, kilenc ajtó visszaútját és belső mentését, **korábbi v1 mentés migrációját**, kapuküszöböt, hiányzó/függő hangkimenetet, három eltérő zenetémát, hangerőt és némítást.
 
-A Playwright Firefox-letöltését a felhőkörnyezet hálózati engedélylistája 403-mal blokkolta. Ezért a valódi Firefox ESR-t a Debian aláírt csomagindexei alapján, `apt-get download` segítségével töltöttük le és `/tmp` alá bontottuk ki. Az aláírás- és TLS-ellenőrzést nem kapcsoltuk ki. A normál Firefoxot Puppeteer WebDriver BiDi-val vezéreltük, nem Chromiumot neveztünk át Firefoxnak.
+## Vizuális ellenőrzés
 
-A konténer nem enged felhasználói névtereket létrehozni, és nincs fizikai hangkártyája. A teszt saját profilja engedélyezi a Web Audio lejátszást, a hang virtuális, helyi PulseAudio null-kimenetre kerül. Ehhez a **tesztfolyamatban**, nem a játék kódjában, a konténerbeli Firefox tartalmi és utility sandboxát fel kellett oldani. Normál asztali böngészőnek ezek a környezeti kerülőutak nem kellenek.
+Az `npm run screenshots` nyolc valódi játékállapotot rögzített: falu, déli falu, patak/híd, erdő, sziklás magaslat, kunyhó, pince, kovácsműhely. A képeket megtekintve ellenőriztem a felismerhető fákat, házakat, karaktereket, vízfolyást, hidat, bútorokat, tárgyakat, kamerát és közös pixelméretet/palettát.
 
-Az itt ténylegesen sikeres Firefox-parancs a már előkészített tesztkörnyezetben:
+A kimenetek helye `artifacts/previews/`, nem a Gitbe kerülő játékkód részei. A játékhoz használt PNG és az összes szerkeszthető grafikai forrás viszont verziókezelt. A képernyőképekből nem következtettünk emberi hangszórós meghallgatásra vagy fizikai mobilkészülékes működésre.
+
+## Firefox-hangteszt környezete és korlátok
+
+A Playwright saját Firefox-letöltését a proxy korábban blokkolta. A valódi Firefox ESR a Debian aláírt csomagindexei alapján letöltött csomagból került a tesztgép `/tmp` könyvtárába. Aláírás- és TLS-ellenőrzést nem kapcsoltunk ki.
+
+A felhőkonténerben nincs fizikai hangkártya és tiltott a felhasználói névterek létrehozása. A teszt saját Firefox-profilja engedélyezi a Web Audio automatizált lejátszását; az AudioContext helyi, virtuális PulseAudio-kimenetre játszik. Kizárólag a tesztfolyamatnak kellett konténerbeli sandbox-beállításokat módosítania. Ezek nem részei a játék működésének és nem állítják át a felhasználó böngészőjét.
+
+A ténylegesen sikeres parancs az előkészített tesztgépen:
 
 ```sh
 FIREFOX_PATH=/tmp/smaragd-firefox/runtime/usr/lib/firefox-esr/firefox-esr \
@@ -66,13 +66,15 @@ PULSE_SERVER=unix:/tmp/smaragd-pulse/run/native \
 npm run test:firefox
 ```
 
-A `/tmp`-beli Firefox és a virtuális hangkimenet tesztsegédlet, **nem a játék terjesztett függősége**. Más gépen a telepített Firefox útjával, normál hangkimenettel futtatható a dokumentált teszt.
+Ellenőriztük a működő AudioContextet és a külön falusi, erdei és főellenfél-oszcillátorsorokat. **Fizikai hangszórós meghallgatás és valódi mobiltelefonos próba nem történt.** A mobilvezérlést Chromium érintéses emulációja ellenőrizte. Az `index.html` közvetlen `file://` indítását nem állítjuk támogatottnak; a kért egyszerű helyi webszerveres indítás működik.
 
-Az oszcillátorok ütemezését és működő AudioContextet ellenőriztük. **Fizikai hangszórón történő meghallgatás, szubjektív hangminőség-értékelés és valódi mobilkészülékes érintésteszt nem történt.** A mobilos ellenőrzés a böngésző nézetméretére és túlcsordulására vonatkozik.
+## Javítások a tesztek alapján
 
-## Fejlesztés közben javított problémák
+- Az alsó házsor előtt túl szűk volt a járható sáv; a házakat beljebb helyeztem. Mind a kilenc ajtó mentése/belépése/kilépése utána sikeres.
+- A titkos szekrény korábban napló nélkül is elmozdítható volt; az új kérés szerint ez most naplóhoz és kézi vizsgálathoz kötött.
+- Hiányzó grafika mellett az újrakezdés és visszatöltés most sem kerülheti meg a betöltési hibát.
+- A korábbi mentések új bútorba vagy vízbe kerülő pozícióját biztonságos helyre migráljuk, tárgyvesztés nélkül.
 
-- Visszatöltés után a közeli ellenfél azonnal eltalálhatta a lovagot. Betöltéskor most egy másodperc sérthetetlenséget kap.
-- Elérhetetlen hangkimenetnél az AudioContext indítása végtelenül függőben maradhatott. A hangindítás most időkorlátos, kezelhetően kikapcsolva marad.
-- A HUD azonos értékeit képkockánként újraírta. Most a szöveg és az életerő akadálymentes felirata csak változáskor frissül.
-- Az első Chromium-futásban egy kapupárbeszéd-ellenőrzés eltérő szöveget várt. A helyes, tényleges végállapothoz igazított teszt ezután sikeres; a korábbi hibás futást nem számítjuk sikeresnek.
+## GitHub
+
+A fejlesztés mérföldkövei helyi Git-commitokban vannak a `feat/snes-falu-kornyek` ágon. A `main`, `feat/browser-knight-game` és a korábbi `feat/smaragdvolgy` ág megmaradt. **Az új ág feltöltése a kifejezetten kért, nyilvános feltöltés előtti jóváhagyásra vár**, ezért ennek távoli megjelenését még nem állítjuk ellenőrzöttnek.

@@ -1,6 +1,6 @@
 # A Varázsló Tornya – Smaragdvölgy
 
-Kis méretű, magyar nyelvű, felülnézetes fantasy RPG, saját 16 bites hangulatú pixelgrafikával és szintetizált retro zenével. A korábbi lovagos böngészőjáték folytatása, ugyanazzal a Canvas-alapú megjelenítéssel, WASD/nyíl vezérléssel és irányított kardharccal.
+Magyar nyelvű, felülnézetes, SNES-hangulatú fantasy RPG-kezdőterület HTML5, CSS és JavaScript használatával. A korábbi működő lovagos játék harca, mozgása és életerőrendszere tovább él benne, falusi élettel, fejlődéssel és felfedezhető titkokkal bővítve.
 
 ## Indítás
 
@@ -10,37 +10,47 @@ A projekt könyvtárában:
 python3 -m http.server 8000
 ```
 
-Nyisd meg a `http://localhost:8000` címet Chromiumban vagy Firefoxban. Alternatíva: `npm start`. A játékhoz nincs csomagtelepítés vagy build; modern böngésző és helyi HTTP-szerver kell. Az ES-modulok miatt az `index.html` közvetlen, `file://` megnyitása helyett használd a szervert. Nincs Windows EXE.
-
-A játék nem tölt le külső képet, betűtípust, zenét vagy egyéb eszközt. A helyi szerver elindítása után internet nélkül is játszható.
+Ezután nyisd meg a `http://localhost:8000` címet Firefoxban vagy Chromiumban. Alternatíva: `npm start`. A játék indításához nem kell `npm install`, build vagy internet. Az ES-modulok miatt az `index.html` közvetlen, `file://` megnyitása helyett az egyszerű helyi webszervert használd. Windows EXE nem készül.
 
 ## Vezérlés
 
-| Művelet                            | Vezérlés                         |
-| ---------------------------------- | -------------------------------- |
-| Mozgás                             | WASD / nyilak                    |
-| Kardcsapás                         | Szóköz, nyomva tartva ismétlődik |
-| Beszélgetés, gyűjtés, vizsgálat    | E, közelről                      |
-| Gyógyital                          | Q / ital gomb                    |
-| Tarisznya, felszerelés, küldetések | I / Tarisznya                    |
-| Párbeszéd bezárása                 | Esc / Tovább                     |
-| Új játék                           | R / Új játék, megerősítéssel     |
-| Mentés / visszatöltés              | A játéktér alatti gombok         |
-| Zene és hanghatások                | Hang: ki/be gomb                 |
+| Művelet                               | Vezérlés                          |
+| ------------------------------------- | --------------------------------- |
+| Mozgás                                | WASD vagy nyilak                  |
+| Irányított kardcsapás                 | Szóköz; nyomva tartva ismétlődik  |
+| Beszélgetés, ajtó, gyűjtés, vizsgálat | E, közelről                       |
+| Gyógyital                             | Q vagy ital gomb                  |
+| Tarisznya és küldetések               | I vagy Tarisznya gomb             |
+| Párbeszéd bezárása                    | Esc vagy Tovább                   |
+| Új játék                              | R vagy Új játék; megerősítést kér |
+| Mentés, betöltés                      | A játéktér alatti gombok          |
+| Hang, hangerő                         | Hang gomb és Hangerő csúszka      |
 
-Érintőképernyőn külön mozgás-, támadás-, E- és Q-gombok jelennek meg. A hang alapból ki van kapcsolva; kattintással kapcsolható be. A párbeszédek megállítják a harcot. Az új játék nem törli a kézi mentést.
+Érintőképernyőn külön mozgás-, kard-, E- és Q-gombok látszanak. A hang csak felhasználói kattintásra indul. A csúszka a zenét és a hanghatásokat együtt szabályozza; beállítása megmarad. Párbeszéd közben a harc és mozgás szünetel. A falu biztonságos.
 
-## A kezdőterület
+## Bejárható világ
 
-- **Smaragdvölgy falu:** biztonságos tér, házak, kovácsműhely, fogadó és kereskedő. Boros edzett vaskardot árul, Ilona gyógyít és gyógyfüvet kér, Áron a vidék múltjáról mesél, Márton az eltűnt Dénes felkutatásával bíz meg. Rékánál gyógyital vehető.
-- **Faluszéli rét:** a falutól keletre, nyálkákkal és gyűjthető gyógyfüvekkel. Három gyógyfűért Ilona egyszeri jutalmat ad.
-- **Öreg erdő:** tovább keletre, erősebb ellenfelekkel és egy elhagyott kunyhóval. Dénes a kunyhótól délkeletre vár. Kiszabadítása után térj vissza Mártonhoz; a kapott közönséges penge áttöri Tövisúr pajzsát. Tövisúr az északi tisztáson áll.
+A kültéri pálya **1920 × 640 pixel**, **16 × 16 pixeles alapcsempékkel**, két tengelyen követő kamerával.
 
-Az összefüggő kültéri pályán a kamera követi a lovagot, nincs betöltés a helyszínek között. A kunyhó ajtaján E-vel léphetsz be. A kunyhó titkait a napló és a tárgyak saját kezű vizsgálata árulja el; a titkos tárgynál nincs automatikus jelzés. A pince teljesen opcionális, a fő küldetés nélküle is végigjátszható. Az északi kapu csak Tövisúr legyőzése után nyílik ki; mögötte még nincs új pálya.
+- **Smaragdvölgy:** hat lakóház, kovácsműhely, fogadó és kereskedő boltja. Mind a kilenc ajtóhoz be lehet menni E-vel; a kijáratok visszavisznek az adott épület elé. A házak bútorozottak, a fontos üzletekben a tulajdonos is megszólítható. A főutca, a déli keresztutca és kisebb ösvények mellett kút, kertek, virágágyások, kerítések és lámpások állnak.
+- **Faluszéli rét:** gyengébb ellenfelek, egyszer gyűjthető gyógyfüvek, virágok, bokrok, sziklás magaslat. A patakot csak a fahídon lehet átszelni.
+- **Öreg erdő:** sűrűbb fenyőcsoportok, erősebb lények, elhagyott kunyhó, Dénes és Tövisúr északi tisztása. A kapu legyőzött főellenfél után ténylegesen átléphető, de csak a fejezet végét jelző küszöbig; nincs mögötte elkészített új terület.
 
-## Fejlődés és tárgyak
+A három kültéri helyszín között nincs új pálya letöltése. A belső terek azonnal váltanak. Épületek, bútorok, fatörzsek, sziklák, bokrok és a hídon kívüli víz akadályozzák a mozgást; az apró virágok, lámpások és egyéb díszletek nem mind ütköző tárgyak.
 
-A lovag 1. szinten, vaskarddal (1 sebzés), vaspajzzsal, vászonvérttel, 18 arannyal, két gyógyitallal és öt életerővel indul. A pajzs és a vért alapfelszerelés; nincs külön felszerelési menü vagy védelemstatisztika.
+## Falusiak és küldetések
+
+- **Boros, a kovács:** 24 aranyért edzett vaskardot, 18 aranyért bélelt mellényt kínál.
+- **Ilona, a fogadós:** 5 aranyért teljesen meggyógyít; három réti gyógyfűért egyszeri jutalmat ad.
+- **Áron, a falusi öreg:** a torony mágusáról és Tövisúr eredetéről mesél.
+- **Márton, a favágó:** az eltűnt Dénes felkutatását kéri. Dénest a kunyhótól délkeletre keresd. Kiszabadítása után térj vissza Mártonhoz a szerény jutalompengéért és a főellenfél pajzsának megtöréséért.
+- **Réka, a kereskedő:** 8 aranyért gyógyitalt árul.
+
+A kunyhó opcionális titkát a **napló elolvasása**, a **szekrény kézi vizsgálata**, majd a megtalált retesz kioldása és a bútor félretolása tárja fel. A szekrény mellett nincs automatikus interakciófelirat, világító nyíl vagy küldetésjel. A pincében egy rövid rúnarejtvény és egyszeri, a kezdőterülethez illő jutalom vár. A fő küldetés a pince nélkül is teljesíthető.
+
+## Fejlődés és felszerelés
+
+Kezdés: vaskard (1 sebzés), vaspajzs, vászonvért, 18 arany, két gyógyital és öt életerő. A pajzs alapfelszerelés, nem külön védelmi statisztika.
 
 | Szint | Összes TP | Alap maximális életerő |
 | ----- | --------: | ---------------------: |
@@ -50,19 +60,35 @@ A lovag 1. szinten, vaskarddal (1 sebzés), vaspajzzsal, vászonvérttel, 18 ara
 | 4     |       110 |                      8 |
 | 5     |       190 |                      9 |
 
-A szintlépés feltölti az életerőt. Az edzett vaskard és az erdőjáró pengéje is 2 sebzést okoz; nincs epikus vagy legendás felszerelés. A pince szerény jutalma egy +1 maximális életerőt adó rézmedál, arany és gyógyital. A szint maximum 5. A közönséges ellenfelek 35 másodperc után csak akkor élednek újra, ha a játékos távol van; Tövisúr végleg legyőzhető.
+Szintlépéskor az életerő feltöltődik. Az edzett vaskard és az erdőjáró pengéje 2 sebzést okoz; a bélelt mellény +1 maximális életerőt ad. A pince rézmedálja további +1 maximális életerő, így a teljes felszerelésű, 5. szintű lovag maximuma 11. Nincs epikus vagy legendás felszerelés.
 
-Gyógyital: +4 életerő, teljes életerőn nem fogy el. A fogadó 5 aranyért teljesen meggyógyít. Vereség után a faluban térsz magadhoz, legfeljebb 5 arany veszteséggel; a fejlődésed, tárgyaid és küldetéseid megmaradnak.
+Gyógyital: +4 életerő, teljes életerőn nem fogy el. Vereség után a faluba kerülhetsz vissza, legfeljebb 5 arany veszteségével; a tárgyak, szintek és küldetések megmaradnak. A közönséges ellenfelek 35 aktív kültéri másodperc után csak távol élednek újra. Tövisúr nem éled újra.
 
-## Mentés
+## Mentés és régebbi mentések
 
-A **Mentés** gomb egy kézi mentési helyet használ az adott böngésző `localStorage` tárhelyén (`varazslo-tornya.smaragdvolgy.v1`). Mentődik a helyszín és pozíció, életerő, szint, TP, arany, tárgyak, küldetések, ellenfelek, gyűjtött növények és a pince állapota. Újratöltés után a **Mentés folytatása** gombbal térhetsz vissza.
+A kézi mentés az adott böngésző `localStorage` tárhelyén él, a korábbi kulcson: `varazslo-tornya.smaragdvolgy.v1`. Az adat belső verziója most 2. Mentődik a pozíció, belső helyszín és visszaút, életerő, szint, TP, arany, kard, mellény, italok, növények, küldetések, titkok, rúnák, ellenfelek és a kapu átlépése.
 
-A mentés nem felhőalapú és nem automatikus. Azonos böngésző, profil és cím/port szükséges; a `localhost` és a `127.0.0.1` külön tárhely. Sérült vagy eltérő verziójú mentést a játék elutasít, az aktuális állapot megőrzésével. Tiltott helyi tárhelynél érthető hibaüzenetet ad. Vereség közben nem lehet menteni. Betöltés után egy másodperc sérthetetlenséget kapsz.
+A korábbi Smaragdvölgy **1-es verziójú mentéseit automatikusan átveszi**. Ha az új víz vagy bútor miatt a korábbi pozíció már nem járható, biztonságos helyre állítja a lovagot, a fejlődés és tárgyak megőrzésével. Betöltés után egy másodperc sérthetetlenség jár. Hibás mentés vagy tiltott tárhely esetén hibaüzenetet kapsz, az aktív játék nem íródik felül.
 
-## Tesztek
+A mentés nem automatikus, nem felhőalapú. Ugyanaz a böngészőprofil és cím/port kell hozzá: `localhost` és `127.0.0.1` külön tároló. Az Új játék nem törli a kézi mentést.
 
-Csak a fejlesztői tesztekhez kell Node.js 22+ és npm:
+## Pixelgrafika és hang
+
+A játék **helyi PNG-atlaszt** használ, 74 sprite-tal/csempével, közös 29 színű palettával és élsimítás nélküli rajzolással. A víz és szereplők animáltak. A források és a külső csomagok elérhetősége az [ASSET_CREDITS.md](ASSET_CREDITS.md) fájlban olvasható. Külső Zelda-/Secret of Mana-grafikát nem tartalmaz.
+
+A nyugodt falusi, titokzatos erdei és gyorsabb főellenfél-dallam, valamint a retro hanghatások saját Web Audio szintézissel készülnek. Nincs külső zene vagy hangfelvétel.
+
+Az eredeti grafikai forrás újraépíthető külső csomag nélkül:
+
+```sh
+npm run assets:build
+```
+
+A `tools/build-assets.mjs` a szerkeszthető pixelrajz, az `assets/atlas.js` a generált koordinátajegyzék. Hiányzó PNG esetén a játék látható betöltési hibával áll meg, nem helyettesíti a grafikát geometriai alakzatokkal.
+
+## Fejlesztői ellenőrzések
+
+A tesztekhez Node.js 22+ és npm kell, a játékhoz nem:
 
 ```sh
 npm ci
@@ -70,24 +96,29 @@ npm test
 npm run test:browser
 ```
 
-A Chromium-tesztek Playwrightot használnak. Alapértelmezett böngészőút: `/usr/bin/chromium`; másik telepítéshez `CHROMIUM_PATH=/teljes/ut/chromium npm run test:browser`. A teszt automatikusan indít helyi HTTP-szervert a 8000-es porton, vagy használja a már futót. A kizárólag rendszerre telepített böngészővel tesztelő konfiguráció nem tölt le böngészőt.
-
-A külön Firefox-ellenőrzés valódi Firefoxot vezérel WebDriver BiDi-n keresztül:
+A Playwright Chromiumot használ (`/usr/bin/chromium`, vagy `CHROMIUM_PATH`), és szükség esetén elindítja a helyi szervert. A külön, valódi Firefoxot vezérlő WebDriver BiDi-teszthez fusson a szerver:
 
 ```sh
-# Egy másik terminálban fusson a helyi HTTP-szerver:
 FIREFOX_PATH=/teljes/ut/firefox npm run test:firefox
 ```
 
-Az alapértelmezett Firefox-út `/usr/bin/firefox-esr`. A teszt nem telepít Firefoxot. Korlátozott Linux-konténerben, ahol a Firefox nem tud felhasználói névteret létrehozni, a tesztfolyamathoz `MOZ_DISABLE_CONTENT_SANDBOX=1` lehet szükséges; normál gépen ezt ne állítsd be. A Firefox automatizálási profilja engedélyezi a Web Audio lejátszást a determinisztikus hangteszthez. Fizikai hangkimenet nélküli konténerben virtuális PulseAudio-kimenet is kellhet; a futtatott környezet pontos beállításait a tesztjelentés rögzíti. Ezek nem módosítják a játék vagy a felhasználó böngészőjének beállításait. A böngészős tesztek a forgatókönyvek közötti hosszú sétát mentési ellenőrzőpontokkal rövidítik, a tényleges műveleteket gombokkal és billentyűkkel hajtják végre. Részletes eredmény: [TEST_RESULTS.md](TEST_RESULTS.md).
+Alapértelmezett Firefox: `/usr/bin/firefox-esr`. Az automatizálási profil a hangteszthez engedélyezi a Web Audio lejátszást. Korlátozott konténerben külön böngésző- és virtuális hangbeállítások kellhetnek; a ténylegesen használtakat a [TEST_RESULTS.md](TEST_RESULTS.md) tartalmazza.
 
-## Bővíthető felépítés
+Nyolc valódi játékállapot képernyőképe helyi szerverrel készíthető:
 
-- `world.js`: világméret, épületek, NPC-k, tárgyak, ellenfelek és szintküszöbök.
-- `engine.js`: mozgás, harc, küldetések, gazdaság, párbeszédműveletek, mentésellenőrzés; DOM nélkül tesztelhető.
-- `renderer.js`: az eredeti karaktergrafikát és rajzolást bővítő Canvas-megjelenítés, kamera, animációk.
-- `audio.js`: saját dallamok és hanghatások Web Audio API-val.
-- `game.js`: böngészős vezérlés, kezelőfelület és játékhurok.
-- `tests/`: logikai és tényleges böngészős ellenőrzések.
+```sh
+npm run screenshots
+```
 
-A `feat/browser-knight-game` ág őrzi az eredeti működő verziót. Ez a bővítés a `feat/smaragdvolgy` ágon készül; a `main` ágat nem módosítja.
+Kimenet: `artifacts/previews/` (Git által figyelmen kívül hagyva). Ez csak fejlesztői tesztsegédlet, nem része a játék futásának.
+
+## Felépítés és Git
+
+- `world.js`: pálya, ajtók, helyszínek, NPC-k, ellenfelek és ütköző tárgyak.
+- `engine.js`: a korábbi mozgást és kardharcot bővítő játékszabályok, párbeszédek, gazdaság, mentés és kompatibilitás.
+- `renderer.js`, `assets/`: csempék, sprite-ok, kamera és animációk.
+- `audio.js`: három eredeti zenetéma, hanghatások, hangerő és némítás.
+- `game.js`: HUD, billentyűzet, érintés és játékhurok.
+- `tests/`, `tools/`: logikai/böngészős tesztek, eredeti grafikai forrás és képernyőkép-segédlet.
+
+Ez a fejlesztés a **`feat/snes-falu-kornyek`** ágon készült. Megőrzi a korábbi Smaragdvölgy működő rendszereit és történetét. A `main`, `feat/browser-knight-game` és GitHubon megőrzött `feat/smaragdvolgy` változatlan. A nyilvános feltöltés külön felhasználói jóváhagyásra vár.
