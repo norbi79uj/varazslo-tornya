@@ -1,0 +1,16 @@
+{
+  "name": "varazslo-tornya-smaragdvolgy",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test": "node --test tests/engine.test.js tests/audio.test.js",
+    "test:browser": "playwright test",
+    "test:firefox": "node tests/firefox-smoke.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "puppeteer-core": "25.16.0"
+  }
+}

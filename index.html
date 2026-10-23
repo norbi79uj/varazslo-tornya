@@ -1,23 +1,130 @@
 <!doctype html>
 <html lang="hu">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>A varázsló tornya · Az elfeledett kert</title>
-<link rel="stylesheet" href="style.css">
-<script src="game.js" defer></script>
-</head>
-<body>
-<main>
-<header><a class="brand" href="./">✦ TORONYJÁTÉKOK</a><span class="edition">01 / AZ ELFELEDETT KERT</span></header>
-<section class="intro"><p class="eyebrow">EGY APRÓ, PIXELES KALAND</p><h1>A varázsló tornya<span>Az elfeledett kert</span></h1><p>A kapu mögött egy ősi őrző vár. Emeld fel a kardod, lovag!</p></section>
-<section class="game-frame" aria-label="Játéktér">
-<div class="hud"><div><span class="label">ÉLETERŐ</span><span id="health" aria-live="polite">♥ ♥ ♥ ♥ ♥</span></div><div class="location"><span class="label">SMARAGDVIDÉK</span><span>Kert · 1. szint</span></div><div class="quest"><span class="label">KÜLDETÉS</span><span id="quest">Győzd le az őrzőt <b>0/1</b></span></div></div>
-<div class="screen"><canvas id="game" width="640" height="384" tabindex="0" aria-label="Felülnézetes lovagjáték. Mozgás: nyilak vagy WASD. Kard: szóköz. Újrakezdés: R."></canvas><div id="overlay"><span class="eyebrow">A KALAND RÁD VÁR</span><h2>Lépj be a kertbe!</h2><p>Öt szív. Egy kard. Egy őrző.</p><button id="start">Kaland indítása <span>→</span></button></div></div>
-<div class="game-footer"><span><i></i> <span id="status" role="status">Készen állsz a kalandra?</span></span><button id="restart" title="Újrakezdés (R)">↻ Újrakezdés</button></div>
-</section>
-<section class="instructions"><div><span class="instruction-icon">✥</span><p><strong>Mozgás</strong><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> vagy nyilak</span></p></div><div><span class="instruction-icon">⚔</span><p><strong>Kardcsapás</strong><span><kbd>SPACE</kbd> · közelről támadj</span></p></div><div><span class="instruction-icon">♡</span><p><strong>Maradj életben</strong><span>Kerüld el az őrző érintését!</span></p></div></section>
-<div class="touch-controls" aria-label="Érintéses vezérlés"><button data-key="ArrowLeft" aria-label="Balra">←</button><button data-key="ArrowUp" aria-label="Fel">↑</button><button data-key="ArrowDown" aria-label="Le">↓</button><button data-key="ArrowRight" aria-label="Jobbra">→</button><button data-key=" " aria-label="Kardcsapás">⚔</button></div>
-<footer><span>KIS VILÁG. NAGY KALAND.</span><span>HTML / CSS / JAVASCRIPT <b>✦</b></span></footer>
-</main>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>A Varázsló Tornya – Smaragdvölgy</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="game.js"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a class="brand" href="./">✦ TORONYJÁTÉKOK</a
+        ><span class="edition">01 / SMARAGDVÖLGY</span>
+      </header>
+      <section class="intro">
+        <p class="eyebrow">EGY VÖLGY. SZÁMTALAN TITOK.</p>
+        <h1>A Varázsló Tornya<span>Smaragdvölgy</span></h1>
+        <p>
+          A falu segítségre vár. Az erdő titkokat őriz. A történeted itt
+          kezdődik.
+        </p>
+      </section>
+      <section class="game-frame" aria-label="Játéktér">
+        <div class="hud">
+          <div>
+            <span class="label">ÉLETERŐ</span
+            ><span id="health" aria-live="polite">♥ ♥ ♥ ♥ ♥</span>
+          </div>
+          <div class="location">
+            <span class="label">SMARAGDVIDÉK</span
+            ><span id="location">Smaragdvölgy falu</span>
+          </div>
+          <div class="quest">
+            <span class="label">KÜLDETÉS</span
+            ><span id="quest">Beszélj Mártonnal a falu szélén.</span>
+          </div>
+        </div>
+        <div class="screen">
+          <canvas
+            id="game"
+            width="640"
+            height="384"
+            tabindex="0"
+            aria-label="Felülnézetes lovagjáték. Mozgás: nyilak vagy WASD. Kard: szóköz. Vizsgálat és párbeszéd: E. Gyógyital: Q. Tarisznya: I."
+          ></canvas>
+          <div id="overlay">
+            <span class="eyebrow">A KALAND RÁD VÁR</span>
+            <h2>Smaragdvölgy hív!</h2>
+            <p>Egy vaskarddal indulsz. A többi rajtad áll.</p>
+            <button id="start">Kaland indítása <span>→</span></button
+            ><button id="load-start" class="secondary">
+              Mentés folytatása
+            </button>
+          </div>
+        </div>
+        <div class="rpg-hud">
+          <div class="progress">
+            <span id="level">1. SZINT</span><span id="xp">0 / 20 TP</span>
+            <div class="xp-track"><i id="xp-bar"></i></div>
+          </div>
+          <span>◈ <b id="gold">18</b> arany</span
+          ><button id="potion" title="Gyógyital használata (Q)">
+            ⚗ <b id="potions">2</b> ital · Q</button
+          ><span id="weapon">Vaskard</span>
+        </div>
+        <div class="toolbar">
+          <button id="inventory">Tarisznya · I</button
+          ><button id="save">Mentés</button><button id="load">Betöltés</button
+          ><button id="sound" aria-pressed="false">♫ Hang: ki</button>
+        </div>
+        <div class="game-footer">
+          <span
+            ><i></i>
+            <span id="status" role="status"
+              >Készen állsz a kalandra?</span
+            ></span
+          ><button id="restart" title="Újrakezdés (R)">↻ Új játék</button>
+        </div>
+      </section>
+      <section class="instructions">
+        <div>
+          <span class="instruction-icon">✥</span>
+          <p>
+            <strong>Mozgás</strong
+            ><span
+              ><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> vagy
+              nyilak</span
+            >
+          </p>
+        </div>
+        <div>
+          <span class="instruction-icon">⚔</span>
+          <p>
+            <strong>Kardcsapás</strong
+            ><span><kbd>SPACE</kbd> · kard / <kbd>E</kbd> · vizsgálat</span>
+          </p>
+        </div>
+        <div>
+          <span class="instruction-icon">♡</span>
+          <p>
+            <strong>Fedezd fel</strong
+            ><span>Q · gyógyital / I · tarisznya</span>
+          </p>
+        </div>
+      </section>
+      <div class="touch-controls" aria-label="Érintéses vezérlés">
+        <button data-key="ArrowLeft" aria-label="Balra">←</button
+        ><button data-key="ArrowUp" aria-label="Fel">↑</button
+        ><button data-key="ArrowDown" aria-label="Le">↓</button
+        ><button data-key="ArrowRight" aria-label="Jobbra">→</button
+        ><button data-key=" " aria-label="Kardcsapás">⚔</button
+        ><button data-key="e" aria-label="Vizsgálat">E</button
+        ><button data-key="q" aria-label="Gyógyital">Q</button>
+      </div>
+      <footer>
+        <span>KIS VILÁG. NAGY KALAND.</span
+        ><span>HTML / CSS / JAVASCRIPT <b>✦</b></span>
+      </footer>
+      <dialog id="dialog" aria-labelledby="dialog-title">
+        <span class="eyebrow">SMARAGDVÖLGY KRÓNIKÁI</span>
+        <h2 id="dialog-title"></h2>
+        <p id="dialog-text"></p>
+        <div id="dialog-choices"></div>
+        <button id="close-dialog" class="secondary">Tovább · Esc</button>
+      </dialog>
+    </main>
+  </body>
 </html>
