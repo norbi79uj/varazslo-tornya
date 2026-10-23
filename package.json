@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "python3 -m http.server 8000",
-    "test": "node --test tests/engine.test.js tests/audio.test.js",
+    "test": "node --test tests/engine.test.js tests/audio.test.js tests/graphics.test.js",
     "test:browser": "playwright test",
     "test:firefox": "node tests/firefox-smoke.js",
     "assets:build": "node tools/build-assets.mjs",

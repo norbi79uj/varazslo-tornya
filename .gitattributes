@@ -1,0 +1,4 @@
+# Keep the supplied Kenney assets and license byte-identical across platforms.
+assets/kenney/characters/*.png binary
+assets/kenney/characters/License.txt -text whitespace=-blank-at-eol,cr-at-eol
+assets/kenney/characters/spritesheetInfo.txt -text whitespace=cr-at-eol

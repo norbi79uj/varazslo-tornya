@@ -349,6 +349,35 @@ try {
       assert.ok(result.type.includes("image/png"));
       assert.equal(result.count, 74);
       assert.ok(result.colors > 20);
+      const roles = await page.evaluate(async () => {
+        const { CHARACTER_SHEET, CHARACTER_PROFILES, drawKenneyActor } =
+          await import("/assets/kenney/characters/profiles.js");
+        const img = new Image();
+        img.src = CHARACTER_SHEET.url;
+        await img.decode();
+        const c = document.createElement("canvas");
+        c.width = 80;
+        c.height = 64;
+        const ctx = c.getContext("2d");
+        return Object.keys(CHARACTER_PROFILES).map((name) => {
+          const f = [];
+          for (const frame of [0, 1]) {
+            ctx.clearRect(0, 0, 80, 64);
+            drawKenneyActor(ctx, img, name, 16, 16, { frame });
+            f.push([...ctx.getImageData(0, 0, 80, 64).data]);
+          }
+          return {
+            name,
+            visible: f[0].filter((v, i) => i % 4 === 3 && v > 0).length,
+            animated: f[0].some((v, i) => v !== f[1][i]),
+          };
+        });
+      });
+      assert.equal(roles.length, 10);
+      for (const role of roles) {
+        assert.ok(role.visible > 100, role.name);
+        assert.equal(role.animated, true, role.name);
+      }
       await page.screenshot({
         path: "test-results/snes-firefox-village.png",
         fullPage: true,

@@ -8,6 +8,10 @@ import {
   STREAM,
 } from "./world.js";
 import { ATLAS, PALETTE } from "./assets/atlas.js";
+import {
+  CHARACTER_SHEET,
+  drawKenneyActor,
+} from "./assets/kenney/characters/profiles.js";
 export class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -15,20 +19,27 @@ export class Renderer {
     this.ctx.imageSmoothingEnabled = false;
     this.camera = 0;
     this.cameraY = 0;
-    this.image = new Image();
-    this.ready = new Promise((resolve, reject) => {
-      this.image.onload = resolve;
-      this.image.onerror = () =>
-        reject(
-          Error(
-            "A helyi pixelgrafika nem tölthető be: assets/smaragd-atlas.png",
-          ),
-        );
-    });
-    this.image.src = new URL(
-      "./assets/smaragd-atlas.png",
-      import.meta.url,
-    ).href;
+    const load = (url) => {
+      const image = new Image();
+      const ready = new Promise((resolve, reject) => {
+        image.onload = resolve;
+        image.onerror = () =>
+          reject(
+            Error(
+              `A helyi pixelgrafika nem tölthető be: ${new URL(url).pathname}`,
+            ),
+          );
+      });
+      image.src = url;
+      return { image, ready };
+    };
+    const landscape = load(
+      new URL("./assets/smaragd-atlas.png", import.meta.url).href,
+    );
+    const characters = load(CHARACTER_SHEET.url);
+    this.image = landscape.image;
+    this.characters = characters.image;
+    this.ready = Promise.all([landscape.ready, characters.ready]);
   }
   rect(x, y, w, h, color) {
     this.ctx.fillStyle = color;
@@ -80,7 +91,9 @@ export class Renderer {
   }
   person(n, time) {
     const frame = Math.floor(time * 1.5 + n.x) % 3;
-    this.sprite(`${n.id}${frame}`, n.x - 12, n.y - 17);
+    drawKenneyActor(this.ctx, this.characters, n.id, n.x - 16, n.y - 17, {
+      frame,
+    });
     this.text(n.name.split(",")[0], n.x, n.y + 29, "#e4ddb7", 9);
   }
   player(game) {
@@ -99,7 +112,10 @@ export class Renderer {
     const frame =
       moving && !game.dialog ? [0, 1, 0, 2][Math.floor(game.time * 9) % 4] : 0;
     if (game.invincible <= 0 || Math.floor(game.time * 13) % 2 === 0)
-      this.sprite(`hero${frame}`, p.x - 12, p.y - 17, 24, 32, p.dx < 0);
+      drawKenneyActor(this.ctx, this.characters, "hero", p.x - 16, p.y - 17, {
+        frame,
+        flip: p.dx < 0,
+      });
     if (game.swing > 0) {
       const a = Math.atan2(p.dy, p.dx);
       c.strokeStyle = PALETTE.cream;
@@ -121,7 +137,14 @@ export class Renderer {
       c = this.ctx;
     c.save();
     if (e.flash > 0) c.globalAlpha = 0.45;
-    this.sprite(`${name}${frame}`, e.x - size / 2, e.y - size + 17);
+    drawKenneyActor(
+      this.ctx,
+      this.characters,
+      name,
+      e.x - size / 2,
+      e.y - size + 17,
+      { frame, scale: e.boss ? 3 : 2 },
+    );
     c.restore();
     this.rect(e.x - 16, e.y - size + 9, 32, 3, PALETTE.ink);
     this.rect(e.x - 16, e.y - size + 9, (32 * e.hp) / e.maxHp, 3, PALETTE.red);

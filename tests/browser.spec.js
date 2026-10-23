@@ -483,3 +483,57 @@ test("touch controls move and interact; maximum-level HUD fits a narrow screen",
     await context.close();
   }
 });
+
+test("Kenney actors render all roles and animate; missing character sheet blocks startup", async ({
+  page,
+}) => {
+  const result = await page.evaluate(async () => {
+    const { CHARACTER_SHEET, CHARACTER_PROFILES, drawKenneyActor } =
+      await import("/assets/kenney/characters/profiles.js");
+    const image = new Image();
+    image.src = CHARACTER_SHEET.url;
+    await image.decode();
+    const c = document.createElement("canvas");
+    c.width = 80;
+    c.height = 64;
+    const ctx = c.getContext("2d"),
+      roles = [];
+    for (const name of Object.keys(CHARACTER_PROFILES)) {
+      const frames = [];
+      for (const frame of [0, 1]) {
+        ctx.clearRect(0, 0, 80, 64);
+        drawKenneyActor(ctx, image, name, 16, 16, { frame });
+        frames.push([...ctx.getImageData(0, 0, 80, 64).data]);
+      }
+      roles.push({
+        name,
+        visible: frames[0].filter((v, i) => i % 4 === 3 && v > 0).length,
+        animated: frames[0].some((v, i) => v !== frames[1][i]),
+      });
+    }
+    return { width: image.naturalWidth, height: image.naturalHeight, roles };
+  });
+  expect(result.width).toBe(918);
+  expect(result.height).toBe(203);
+  expect(result.roles).toHaveLength(10);
+  for (const role of result.roles) {
+    expect(role.visible, role.name).toBeGreaterThan(100);
+    expect(role.animated, role.name).toBe(true);
+  }
+  const license = await page.request.get(
+    "/assets/kenney/characters/License.txt",
+  );
+  expect(license.ok()).toBe(true);
+  expect(await license.text()).toContain("Creative Commons Zero, CC0");
+  await page.route("**/roguelikeChar_transparent.png", (route) =>
+    route.abort(),
+  );
+  await page.reload();
+  await expect(page.locator("#overlay h2")).toHaveText(
+    "A grafika nem tölthető be",
+  );
+  await expect(page.locator("#status")).toContainText(
+    "roguelikeChar_transparent.png",
+  );
+  await expect(page.locator("#start")).toBeDisabled();
+});

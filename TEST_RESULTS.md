@@ -1,3 +1,32 @@
+# Kenney karaktercsere – aktuális ellenőrzések
+
+**Dátum:** 2026. október 23. **Ág:** `feat/kenney-graphics`, alapja a működő `feat/snes-falu-kornyek` (`6003049`).
+
+Ez a mérföldkő kizárólag az elérhető `kenney_roguelike-characters.zip` csomagot építi be. Az RPG Pack és az Indoors hiányában nem állítjuk, hogy a három csomag teljes grafikai cseréje kész vagy tesztelt lenne.
+
+| Ellenőrzés                                                 | Tényleges eredmény                      |
+| ---------------------------------------------------------- | --------------------------------------- |
+| `npm test`: játékmenet, hang és új Kenney-forrásellenőrzés | **25/25 sikeres**, 0 hibás, 0 kihagyott |
+| Chromium: a meglévő teljes regressziós futás               | **9/9 sikeres**                         |
+| Chromium: az új, külön Kenney-megjelenítési ellenőrzés     | **1/1 sikeres**                         |
+| Firefox ESR: teljes regresszió és Kenney-megjelenítés      | **8/8 sikeres**                         |
+| Kenney PNG SHA-256 összehasonlítás a feltöltött fájllal    | Bájtazonos, sikeres                     |
+| Vizuális ellenőrzés a friss képernyőképeken                | Falu, erdő, kovácsműhely: sikeres       |
+
+A Chromium tíz külön forgatókönyve két futásban teljesült: kilenc regressziós eset, majd egy új Kenney-eset. Nem állítjuk, hogy a korábbi kilences tesztlista már tartalmazta az új tizedik tesztet.
+
+A két böngészőben ténylegesen ellenőriztük a mozgást, irányított kardharcot, ellenfél-viselkedést, sebzést, vereséget, NPC-párbeszédeket, vásárlást, gyógyítást, gyűjtést, mentést és teljes oldal-újratöltés utáni betöltést, a falu/rét/erdő közlekedését, mind a kilenc falusi ajtót, a kunyhó naplóját, a rejtett szekrény kézi megnyitását, a pince rejtvényét, Dénes megmentését, Tövisúr legyőzését és a kaput. Chromiumban az érintéses vezérlés emulációja is sikeres.
+
+**Új grafikai bizonyítékok:** a felhasználó ZIP-jéből származó Kenney PNG és CC0 licencfájl helyben elérhető. Mind a tíz szereplőprofil (lovag, hat NPC, három ellenféltípus) tényleges Canvas-rajzolással látható, nem átlátszó, és a mozgási képkockák különböznek. A profilok forráskoordinátái a 918 × 203 pixeles képen belül vannak. A karakterlap szándékos betöltési hibájánál a játék láthatóan megáll, az indítás tiltott; nincs régi karakteres helyettesítés. A teljes Firefox-futásban 0 alkalmazásból érkező JavaScript-hiba és 0 külső tartalomkérés volt.
+
+A `renderer.js` és a helyi grafikai források változtak; az `engine.js`, `world.js`, `game.js`, `audio.js` és a mentési séma nem változott. A grafikai csere nem igényel új mentést.
+
+A statikus Kenney-rétegekből lábelmozdítással és kis testmozgással készül az animáció, nem a csomagból vett kész járássorozatot használunk. Fizikai mobiltelefonos és hangszórós próba most sem történt. A virtuális Firefox-hangkimenet és a tesztgép részletei a megőrzött korábbi jelentésben szerepelnek alább. A hiányzó RPG és Indoors képfájlok betöltését vagy megjelenítését nem lehetett tesztelni.
+
+---
+
+## Megőrzött előző mérföldkő jelentése
+
 # SNES-falu és környék – tényleges teszteredmények
 
 **Dátum:** 2026. október 23. **Fejlesztési ág:** `feat/snes-falu-kornyek`.

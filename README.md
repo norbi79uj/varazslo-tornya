@@ -12,6 +12,12 @@ python3 -m http.server 8000
 
 Ezután nyisd meg a `http://localhost:8000` címet Firefoxban vagy Chromiumban. Alternatíva: `npm start`. A játék indításához nem kell `npm install`, build vagy internet. Az ES-modulok miatt az `index.html` közvetlen, `file://` megnyitása helyett az egyszerű helyi webszervert használd. Windows EXE nem készül.
 
+## Kenney grafikai frissítés – aktuális állapot
+
+A `feat/kenney-graphics` ág a korábbi működő verziót fejleszti tovább. A ténylegesen feltöltött **Kenney Roguelike Characters 2.0 (CC0)** csomagból új lovag-, NPC- és ellenfélgrafikák kerültek be, egységes pixelmérettel. A játékszabályok, mentési formátum, küldetések, ütközések és a titkos pince nem változtak.
+
+**A környezetcsere még nem teljes:** a `kenney_roguelike-rpg-pack.zip` és `kenney_roguelike-indoors.zip` nincs a rendelkezésre álló mellékletek között. Ezek megérkezéséig a tájakat, házakat és bútorokat a korábbi saját atlasz rajzolja. Pontos forrás- és licencjegyzék: [ASSET_CREDITS.md](ASSET_CREDITS.md).
+
 ## Vezérlés
 
 | Művelet                               | Vezérlés                          |
@@ -74,7 +80,7 @@ A mentés nem automatikus, nem felhőalapú. Ugyanaz a böngészőprofil és cí
 
 ## Pixelgrafika és hang
 
-A játék **helyi PNG-atlaszt** használ, 74 sprite-tal/csempével, közös 29 színű palettával és élsimítás nélküli rajzolással. A víz és szereplők animáltak. A források és a külső csomagok elérhetősége az [ASSET_CREDITS.md](ASSET_CREDITS.md) fájlban olvasható. Külső Zelda-/Secret of Mana-grafikát nem tartalmaz.
+A környezet a korábbi helyi, 74 elemes PNG-atlaszt használja. A karaktereket külön, módosítatlan Kenney PNG-lap adja; a 16 pixeles források 2× (főellenfélnél 3×) egész léptékben, élsimítás nélkül jelennek meg. A víz és szereplők animáltak. A források és a külső csomagok elérhetősége az [ASSET_CREDITS.md](ASSET_CREDITS.md) fájlban olvasható. Külső Zelda-/Secret of Mana-grafikát nem tartalmaz.
 
 A nyugodt falusi, titokzatos erdei és gyorsabb főellenfél-dallam, valamint a retro hanghatások saját Web Audio szintézissel készülnek. Nincs külső zene vagy hangfelvétel.
 
@@ -84,7 +90,7 @@ Az eredeti grafikai forrás újraépíthető külső csomag nélkül:
 npm run assets:build
 ```
 
-A `tools/build-assets.mjs` a szerkeszthető pixelrajz, az `assets/atlas.js` a generált koordinátajegyzék. Hiányzó PNG esetén a játék látható betöltési hibával áll meg, nem helyettesíti a grafikát geometriai alakzatokkal.
+A `tools/build-assets.mjs` a korábbi környezetrajzok forrása, az `assets/atlas.js` a generált koordinátajegyzék. Ez az újraépítés nem írja át a Kenney-fájlokat. A Kenney szereplők rétegei és eltolásai az `assets/kenney/characters/profiles.js` fájlban szerkeszthetők. Hiányzó PNG esetén a játék látható betöltési hibával áll meg, nem helyettesíti a grafikát geometriai alakzatokkal.
 
 ## Fejlesztői ellenőrzések
 
@@ -121,4 +127,4 @@ Kimenet: `artifacts/previews/` (Git által figyelmen kívül hagyva). Ez csak fe
 - `game.js`: HUD, billentyűzet, érintés és játékhurok.
 - `tests/`, `tools/`: logikai/böngészős tesztek, eredeti grafikai forrás és képernyőkép-segédlet.
 
-Ez a fejlesztés a **`feat/snes-falu-kornyek`** ágon készült. Megőrzi a korábbi Smaragdvölgy működő rendszereit és történetét. A `main`, `feat/browser-knight-game` és GitHubon megőrzött `feat/smaragdvolgy` változatlan. A felhasználó jóváhagyása után az ág GitHubra került; a távoli commitot és a játékfájlokat visszaellenőriztük.
+Az aktuális karaktercsere a **`feat/kenney-graphics`** ágon készül, a korábbi **`feat/snes-falu-kornyek`** működő verziójából. Megőrzi a korábbi Smaragdvölgy működő rendszereit és történetét. A `main`, `feat/browser-knight-game`, `feat/smaragdvolgy` és `feat/snes-falu-kornyek` korábbi ágai változatlanok. A felhasználó jóváhagyása után az ág GitHubra került; a távoli commitot és a játékfájlokat visszaellenőriztük.
