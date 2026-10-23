@@ -1,7 +1,5 @@
 # Grafika és hang
 
-A játék pixelgrafikái, karakterei, pályái és animációi a projekt JavaScript-kódjával, Canvas rajzolóparancsokkal készülnek. A lovag és az őrző a projekt korábbi böngészős játékának továbbfejlesztett saját sprite-jai. Nem használtunk külső sprite-csomagot, emulált játék-ROM-ot vagy más játékból kivett képet.
+A részletes grafikai forrásjegyzék, az eredeti sprite-ok előállítási módja és a nem elérhető külső csomagok állapota az [ASSET_CREDITS.md](ASSET_CREDITS.md) fájlban található.
 
-A falu és az erdő eltérő dallamai, a basszuskíséret és a támadás, sebzés, párbeszéd, vásárlás, gyógyítás, tárgyfelvétel és felfedezés hangjai saját, Web Audio oszcillátorokkal szintetizált hangsorok. Nincs külső hangfelvétel vagy átvett dallam.
-
-A felület helyi rendszerbetűket használ. A teszteszközök fejlesztői függőségek, nem kerülnek bele a böngészőben futó játékba; saját licenceiket a csomagjaik tartalmazzák.
+A játék helyben tárolt PNG-atlaszt használ, közös palettával. A szerkeszthető pixelgrafikai forrás a `tools/build-assets.mjs`; a fájl újraépítése nem igényel hálózatot vagy telepített rajzprogramot. A saját Web Audio dallamok és hanghatások az `audio.js` fájlban találhatók.

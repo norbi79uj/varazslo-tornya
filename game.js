@@ -206,4 +206,15 @@ function frame(now) {
   }
   requestAnimationFrame(frame);
 }
-requestAnimationFrame(frame);
+$("#start").disabled = true;
+$("#load-start").disabled = true;
+renderer.ready.then(() => {
+  $("#start").disabled = false;
+  $("#load-start").disabled = false;
+  requestAnimationFrame(frame);
+}).catch(error => {
+  $("#overlay h2").textContent = "A grafika nem tölthető be";
+  $("#overlay p").textContent = "Indítsd a játékot helyi webszerverről, és ellenőrizd az assets mappát.";
+  $("#status").textContent = error.message;
+});
+
